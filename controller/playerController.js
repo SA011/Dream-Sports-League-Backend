@@ -1,6 +1,6 @@
 const playerDatabase = require('../database/players.js');
 
-const positiveNameConverter = {
+const positionNameConverter = {
     "goalkeeper": "GK",
     "defender": "DEF",
     "midfielder": "MID",
@@ -8,7 +8,7 @@ const positiveNameConverter = {
 };
 module.exports.allPlayerWithPosition = async (request, response) => {
     var { position } = request.params;
-    position = positiveNameConverter[position];
+    position = positionNameConverter[position];
     const ret = await playerDatabase.getPlayerByPosition(position);
     response.send(ret);
 };
