@@ -1,5 +1,9 @@
+const { request, response } = require('express');
 const playerDatabase = require('../database/players.js');
-
+const squadDatabase = require('../database/squad.js');
+const playerController = require('./playerController.js');
+const userController = require('./userController.js');
+const userID = 'red1';
 const emptyList = {
     players: {
         goalkeepers: [],
@@ -36,10 +40,39 @@ const getLowestWorthSquad = async () => {
     return ret;
 };
 
+const checkValidity = (squad, balance) => {
+    // console.log(balance);
+    const playerSet = new Set();
+    for(var position in squad){
+        squad[position].forEach(async (x) => {
+            if(!playerController.validPlayer(x) == position){
+                return false;
+            }
+            playerSet.add(x);
+            const price = await playerController.playerPrice(x);
+            // console.log(price);
+            balance -= price;
+        });
+    }
+    // console.log(balance);
+    return balance >= 0 && playerSet.size == 16;
+};
+
 module.exports.autopick = async (request, response) => {
     response.send(await getLowestWorthSquad());
 };
 
 module.exports.squad = async (request, response) => {
     response.send(emptyList);
+};
+
+module.exports.buildSquad = async (request, response) => {
+    const squad = request.body;
+    if(!checkValidity(squad, await userController.getBalance(userID))){
+        console.log('Invalid squad addition');
+        response.sendStatus(400);
+        return;
+    }
+    squadDatabase.buildSquad(userID, squad);
+    response.sendStatus(201);
 };

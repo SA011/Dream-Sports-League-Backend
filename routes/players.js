@@ -1,12 +1,8 @@
 const { Router } = require('express');
-const playerDatabase = require('../database/players.js');
+const playerController = require('../controller/playerController');
 const router = Router();
 
-router.get('/:position', async (request, response) => {
-    const { position } = request.params;
-    console.log(position);
-    console.log(await playerDatabase.getPlayerByPosition(position));
-    response.send(await playerDatabase.getPlayerByPosition(position));
-});
+router.get('/all/selectplayer/:position', playerController.allPlayerWithPosition);
+
 
 module.exports = router;

@@ -1,5 +1,36 @@
 
+
+###
 GET http://localhost:8080/api/squad/
+###
 
+###
+GET http://localhost:8080/api/squad/all/selectplayer/goalkeeper
+###
 
+###
+GET http://localhost:8080/api/squad/all/selectplayer/defender
+###
+
+###
+GET http://localhost:8080/api/squad/all/selectplayer/midfielder
+###
+###
+GET http://localhost:8080/api/squad/all/selectplayer/forward
+###
+
+###
 GET http://localhost:8080/api/squad/autopick
+###
+
+###
+POST http://localhost:8080/api/squad/build
+Content-Type: application/json
+
+{
+    "goalkeepers": [2, 15],
+    "defenders": [1,5,8,10,14],
+    "midfielders": [761,3,4,6,7],
+    "forwards": [11, 28, 30, 40]
+}
+###
