@@ -1,13 +1,18 @@
 # Dream-Sports-League-Backend
 
-- Install node 
-    sudo apt update
-    sudo apt install nodejs
+### Clone this git repository
+```
+git clone https://github.com/SA011/Dream-Sports-League-Backend.git
+```
+### Install npm
+```
+npm i
+```
 
-- Install npm
-    sudo apt install npm
+### Copy .env file
 
-- Install postman (optional, testing purpose)
-    sudo snap install postman
-
+### Start npm
+```
+npm start
+```
 
