@@ -1,5 +1,15 @@
 const playerDatabase = require('../database/players.js');
 
+const emptyList = {
+    players: {
+        goalkeepers: [],
+        defenders: [],
+        midfielders: [],
+        forwards: []
+    },
+    budget: 100
+};
+
 const getLowestWorthSquad = async () => {
     const GK = await playerDatabase.getPlayerByPositionWithSortedOrder('GK', 2);
     const DEF = await playerDatabase.getPlayerByPositionWithSortedOrder('DEF', 5);
@@ -10,8 +20,20 @@ const getLowestWorthSquad = async () => {
     mysquad.forEach((x) => {
         sum += x.price;
     });
-    if(sum > 100)return [];
-    return mysquad;
+    if(sum > 100){
+        return emptyList;
+    }
+    sum = 100 - sum;
+    const ret = {
+        players: {
+            goalkeepers: GK,
+            defenders: DEF,
+            midfielders: MID,
+            forwards: FWD
+        },
+        budget: sum
+    };
+    return ret;
 };
 
 module.exports.autopick = async (request, response) => {
@@ -19,15 +41,5 @@ module.exports.autopick = async (request, response) => {
 };
 
 module.exports.squad = async (request, response) => {
-    console.log('asshse');
-    const ret = {
-        "players": {
-            "goalkeepers": [],
-            "defenders": [],
-            "midfielders": [],
-            "forwards": []
-        },
-        "budget": 100
-    };
-    response.send(ret);
+    response.send(emptyList);
 };

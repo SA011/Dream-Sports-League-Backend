@@ -1,7 +1,8 @@
 const { Router } = require('express');
-const router = Router();
 const squadController = require('../controller/squadController');
 const playerController = require('../controller/playerController');
+
+const router = Router();
 
 router.get('/autopick', squadController.autopick);
 

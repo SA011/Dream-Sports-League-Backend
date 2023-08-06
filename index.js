@@ -1,23 +1,20 @@
 const dotenv = require("dotenv");
-dotenv.config();
-
+const Express = require("express");
 const Connection = require('./database/connect.js');
-Connection.connect();
-
+const router = require('./routes/api.js');
+const cors = require('cors');
 
 const PORT = 8080;
-const Express = require("express");
 const app = Express();
-var cors = require('cors');
-app.use(cors());
 
+dotenv.config();
+Connection.connect();
+
+app.use(cors());
 app.use(Express.json());
+app.use('/api',router);
 
 app.listen(PORT, () => {
     console.log(`The Server is running on Port ${PORT}`);
 });
 
-
-const router = require('./routes/api.js');
-
-app.use('/api',router);
