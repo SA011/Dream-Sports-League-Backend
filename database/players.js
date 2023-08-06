@@ -2,8 +2,12 @@ const { pool } = require('./connect.js');
 
 const findPlayerByID = 'SELECT * FROM players WHERE id = $1::integer';
 const findAllPlayer = 'SELECT * FROM players';
-const findPlayerByPosition = 'SELECT * FROM players WHERE position = $1::text';
-const findPlayerByPositionWithOrder = 'SELECT * FROM players WHERE position = $1::text ORDER BY price ASC LIMIT $2::integer';
+const findPlayerByPosition = 'SELECT players.id, players.name AS name, epl_teams.name AS team , players.overall, players.price, players.points \
+                                FROM players JOIN epl_teams on players.team = epl_teams.id \
+                                WHERE position = $1::text ORDER BY price ASC';
+const findPlayerByPositionWithOrder = 'SELECT players.id, players.name AS name, epl_teams.name AS team , players.overall, players.price, players.points \
+                                        FROM players JOIN epl_teams on players.team = epl_teams.id \
+                                        WHERE position = $1::text ORDER BY price ASC LIMIT $2::integer';
 const findPlayerByName = `SELECT * FROM players WHERE LOWER(name) LIKE '%' ||$1|| '%'`;
 
 module.exports.getPlayerById = async (id) => {
