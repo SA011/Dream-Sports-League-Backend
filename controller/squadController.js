@@ -17,3 +17,17 @@ const getLowestWorthSquad = async () => {
 module.exports.autopick = async (request, response) => {
     response.send(await getLowestWorthSquad());
 };
+
+module.exports.squad = async (request, response) => {
+    console.log('asshse');
+    const ret = {
+        "players": {
+            "goalkeepers": [],
+            "defenders": [],
+            "midfielders": [],
+            "forwards": []
+        },
+        "budget": 100
+    };
+    response.send(ret);
+};

@@ -5,9 +5,11 @@ const Connection = require('./database/connect.js');
 Connection.connect();
 
 
-const PORT = 3000;
+const PORT = 8080;
 const Express = require("express");
 const app = Express();
+var cors = require('cors');
+app.use(cors());
 
 app.use(Express.json());
 
@@ -18,4 +20,4 @@ app.listen(PORT, () => {
 
 const router = require('./routes/api.js');
 
-app.use(router);
+app.use('/api',router);
