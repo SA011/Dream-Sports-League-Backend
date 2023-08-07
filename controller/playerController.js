@@ -6,6 +6,13 @@ const positionNameConverter = {
     "midfielder": "MID",
     "forward": "FWD"
 };
+
+const invertPositionNameConverter = {
+    "GK": "goalkeeper",
+    "DEF": "defender",
+    "MID": "midfielder",
+    "FWD": "forward"
+};
 module.exports.allPlayerWithPosition = async (request, response) => {
     var { position } = request.params;
     position = positionNameConverter[position];
@@ -13,10 +20,11 @@ module.exports.allPlayerWithPosition = async (request, response) => {
     response.send(ret);
 };
 
-module.exports.validPlayer = async (playerid) => {
+module.exports.getPlayerPosition = async (playerid) => {
+    // console.log(playerid);
     res = (await playerDatabase.getPlayerById(playerid));
     if(res.length == 0)return 'none';
-    return res[0].position;
+    return invertPositionNameConverter[res[0].position];
 };
 
 module.exports.playerPrice = async (playerid) => {

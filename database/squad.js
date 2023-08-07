@@ -20,8 +20,11 @@ const buildSquadCommand = 'UPDATE squad SET \
     forward_4 = $16 \
     WHERE user_id = $17::text'
 
+const updateBalance = 'UPDATE users SET \
+    balance = $1 \
+    WHERE user_id = $2::text'
 
-module.exports.buildSquad = async (userid, userSquad) => {
+module.exports.buildSquad = async (userid, userSquad, curBalance) => {
     var params = [];
     for(var position in userSquad){
         userSquad[position].forEach((x) => {
@@ -31,4 +34,5 @@ module.exports.buildSquad = async (userid, userSquad) => {
     params.push(userid);
     // console.log(params);
     await pool.query(buildSquadCommand, params);
+    await pool.query(updateBalance, [curBalance, userid]);
 };

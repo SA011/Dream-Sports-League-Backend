@@ -34,3 +34,15 @@ Content-Type: application/json
     "forwards": [11, 28, 30, 40]
 }
 ###
+
+###
+POST http://localhost:8080/api/squad/build
+Content-Type: application/json
+
+{
+    "goalkeepers": [2, 15],
+    "defenders": [1,9,8,10,14],
+    "midfielders": [761,3,4,6,7],
+    "forwards": [11, 28, 30, 40]
+}
+###

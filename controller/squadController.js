@@ -40,22 +40,39 @@ const getLowestWorthSquad = async () => {
     return ret;
 };
 
-const checkValidity = (squad, balance) => {
+const checkValidity = async (squad, balance) => {
     // console.log(balance);
+    // console.log(squad);
     const playerSet = new Set();
     for(var position in squad){
-        squad[position].forEach(async (x) => {
-            if(!playerController.validPlayer(x) == position){
-                return false;
+        // console.log(position);
+        const playerInPosition = squad[position];
+        // console.log(playerInPosition);
+        for(var i = 0; i < playerInPosition.length; i++){
+            const x = playerInPosition[i];
+            // console.log(x);
+            // console.log(await playerController.getPlayerPosition(x));
+            const temp = position.slice(0, position.length - 1);
+            const curPos = await playerController.getPlayerPosition(x);
+            if((curPos != temp)){
+                console.log(`${x} is ${curPos} but got ${temp}`);
+                // console.log(`${x} is ${await playerController.getPlayerPosition(x)} but tried ${position}`);
+                return -1;
             }
+            // console.log(x);
             playerSet.add(x);
             const price = await playerController.playerPrice(x);
             // console.log(price);
             balance -= price;
-        });
+        }
+
+        // console.log(position);
     }
-    // console.log(balance);
-    return balance >= 0 && playerSet.size == 16;
+        
+    console.log(balance);
+    console.log(playerSet.size);
+    if(playerSet.size != 16)return -1;
+    return balance;
 };
 
 module.exports.autopick = async (request, response) => {
@@ -68,11 +85,13 @@ module.exports.squad = async (request, response) => {
 
 module.exports.buildSquad = async (request, response) => {
     const squad = request.body;
-    if(!checkValidity(squad, await userController.getBalance(userID))){
+    const curBalance = await checkValidity(squad, 100);//await userController.getBalance(userID));
+    if(curBalance < 0){
         console.log('Invalid squad addition');
         response.sendStatus(400);
         return;
     }
-    squadDatabase.buildSquad(userID, squad);
+    // console.log(curBalance);
+    await squadDatabase.buildSquad(userID, squad, curBalance);
     response.sendStatus(201);
 };
