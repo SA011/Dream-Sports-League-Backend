@@ -4,7 +4,7 @@ const findPlayerByID = 'SELECT * FROM players WHERE id = $1::integer';
 const findAllPlayer = 'SELECT * FROM players';
 const findPlayerByPosition = 'SELECT players.id, players.name AS name, epl_teams.name AS team , players.overall, players.price, players.points \
                                 FROM players JOIN epl_teams on players.team = epl_teams.id \
-                                WHERE position = $1::text ORDER BY price ASC';
+                                WHERE position = $1::text ORDER BY price DESC';
 const findPlayerByPositionWithOrder = 'SELECT players.id, players.name AS name, epl_teams.name AS team , players.overall, players.price, players.points \
                                         FROM players JOIN epl_teams on players.team = epl_teams.id \
                                         WHERE position = $1::text ORDER BY price ASC LIMIT $2::integer';
