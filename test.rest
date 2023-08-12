@@ -46,3 +46,13 @@ Content-Type: application/json
     "forwards": [11, 28, 30, 40]
 }
 ###
+
+###
+POST localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+    "user_id": "red1",
+    "password": "123"
+}
+###
