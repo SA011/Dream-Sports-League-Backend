@@ -12,6 +12,7 @@ router.use((req, res, next) => {
         next();
     }
 });
+
 router.get('/all/selectplayer/:position', playerController.allPlayerWithPosition);
 
 router.get('/autopick', squadController.autopick);

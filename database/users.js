@@ -2,6 +2,8 @@ const { getConnection, release} = require('./connect.js');
 
 
 const findUserById = 'SELECT * FROM users WHERE user_id = $1::text';
+const findUserByIdShow = 'SELECT u.user_id, u.name, u.email, u.team_name, e.name AS favorite_team, u.balance, u.point, u.wildcard, u.triple_point \
+                            FROM users u JOIN  epl_teams e ON u.favorite_team = e.id WHERE u.user_id = $1::text';
 const findUserByEmail = 'SELECT * FROM users WHERE email = $1::text';
 const addUserQuery = 'INSERT INTO \
     users (user_id, name, email, team_name, favorite_team, password, balance, point, wildcard, triple_point) \
@@ -41,4 +43,12 @@ module.exports.addUser = async (userid, name, email, team_name, favorite_team, p
     }
     release(pool);
     return res.rowCount == 1;
+}
+module.exports.getUserToShow = async (userid) => {
+    const pool = await getConnection();
+    // console.log(userid);
+    const res = (await pool.query(findUserByIdShow, [userid])).rows;
+    release(pool);
+    if(res.length == 0)return null;
+    return res[0];
 }
