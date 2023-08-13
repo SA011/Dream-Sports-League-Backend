@@ -24,6 +24,8 @@ const updateBalance = 'UPDATE users SET \
     balance = $1 \
     WHERE user_id = $2::text'
 
+const getSquadCommand = 'SELECT * FROM squad WHERE user_id = $1::text'
+
 module.exports.buildSquad = async (userid, userSquad, curBalance) => {
     var params = [];
     for(var position in userSquad){
@@ -38,3 +40,11 @@ module.exports.buildSquad = async (userid, userSquad, curBalance) => {
     await pool.query(updateBalance, [curBalance, userid]);
     release(pool);
 };
+
+module.exports.getSquad = async (userid) => {
+    const pool = await getConnection();
+    const res = (await pool.query(getSquadCommand, [userid])).rows;
+    release(pool);
+    if(res.length != 1)return null;
+    return res[0];
+}

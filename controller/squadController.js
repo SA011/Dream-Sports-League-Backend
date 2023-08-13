@@ -2,8 +2,7 @@ const { request, response } = require('express');
 const playerDatabase = require('../database/players.js');
 const squadDatabase = require('../database/squad.js');
 const playerController = require('./playerController.js');
-const userController = require('./userController.js');
-const userID = 'red1';
+
 const emptyList = {
     players: {
         goalkeepers: [],
@@ -52,10 +51,9 @@ const checkValidity = async (squad, balance) => {
             const x = playerInPosition[i];
             // console.log(x);
             // console.log(await playerController.getPlayerPosition(x));
-            const temp = position.slice(0, position.length - 1);
             const curPos = await playerController.getPlayerPosition(x);
-            if((curPos != temp)){
-                console.log(`${x} is ${curPos} but got ${temp}`);
+            if((curPos != position)){
+                console.log(`${x} is ${curPos} but got ${position}`);
                 // console.log(`${x} is ${await playerController.getPlayerPosition(x)} but tried ${position}`);
                 return -1;
             }
@@ -76,22 +74,34 @@ const checkValidity = async (squad, balance) => {
 };
 
 module.exports.autopick = async (request, response) => {
-    response.send(await getLowestWorthSquad());
+    try{
+        response.send(await getLowestWorthSquad());
+    }catch(error){
+        response.sendStatus(400);
+    }
 };
 
 module.exports.squad = async (request, response) => {
-    response.send(emptyList);
+    try{
+        response.send(await squadDatabase.getSquad(request.user.user_id));
+    }catch(error){
+        response.sendStatus(400);
+    }
 };
 
 module.exports.buildSquad = async (request, response) => {
-    const squad = request.body;
-    const curBalance = await checkValidity(squad, 100);//await userController.getBalance(userID));
-    if(curBalance < 0){
-        console.log('Invalid squad addition');
+    try{
+        const squad = request.body;
+        const curBalance = await checkValidity(squad, 100);//await userController.getBalance(userID));
+        if(curBalance < 0){
+            console.log('Invalid squad addition');
+            response.sendStatus(400);
+            return;
+        }
+        // console.log(curBalance);
+        await squadDatabase.buildSquad(request.user.user_id, squad, curBalance);
+        response.sendStatus(201);
+    } catch (error) {
         response.sendStatus(400);
-        return;
     }
-    // console.log(curBalance);
-    await squadDatabase.buildSquad(userID, squad, curBalance);
-    response.sendStatus(201);
 };
