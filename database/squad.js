@@ -1,4 +1,4 @@
-const { pool } = require('./connect.js');
+const { getConnection , release} = require('./connect.js');
 
 
 const buildSquadCommand = 'UPDATE squad SET \
@@ -33,6 +33,8 @@ module.exports.buildSquad = async (userid, userSquad, curBalance) => {
     }
     params.push(userid);
     // console.log(params);
+    const pool = await getConnection();
     await pool.query(buildSquadCommand, params);
     await pool.query(updateBalance, [curBalance, userid]);
+    release(pool);
 };

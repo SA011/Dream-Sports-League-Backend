@@ -3,15 +3,18 @@ const Express = require("express");
 const passport = require('passport');
 const session = require('express-session');
 
+
+
+dotenv.config();
+
 const Connection = require('./database/connect.js');
 const router = require('./routes/api.js');
 const cors = require('cors');
 
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
 const app = Express();
 
-dotenv.config();
-Connection.connect();
+// Connection.connect();
 
 require('./strategies/local.js')
 
@@ -22,6 +25,7 @@ app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
+    cookie: { maxAge: 3600000 }
 }));
 app.use(passport.initialize());
 app.use(passport.session());
