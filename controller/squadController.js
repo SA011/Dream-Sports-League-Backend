@@ -83,7 +83,8 @@ module.exports.autopick = async (request, response) => {
 
 module.exports.squad = async (request, response) => {
     try{
-        response.send(await squadDatabase.getSquad(request.user.user_id));
+        // response.send(await squadDatabase.getSquad(request.user.user_id));
+        response.send(emptyList);
     }catch(error){
         response.sendStatus(400);
     }
