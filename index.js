@@ -19,7 +19,10 @@ const app = Express();
 require('./strategies/local.js')
 
 
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:3000',
+    credentials: true
+}));
 app.use(Express.json());
 app.use(session({
     secret: process.env.SESSION_SECRET,
