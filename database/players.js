@@ -39,7 +39,7 @@ module.exports.getPlayerByIdWithTeam = async (id) => {
 
 module.exports.getPlayersByIdWithTeam = async (ids) => {
     const pool = await getConnection();
-    var res;
+    var res = [];
     // console.log(ids.length);
     if(ids.length == 11) res = (await pool.query(findPlayerByIDwithTeam11, ids)).rows;
     else if (ids.length == 5) res = (await pool.query(findPlayerByIDwithTeam5, ids)).rows;

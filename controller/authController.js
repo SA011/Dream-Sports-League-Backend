@@ -1,4 +1,4 @@
-const userDatabase = require('../database/users.js');
+// const userDatabase = require('../database/users.js');
 const bcrypt = require('bcryptjs');
 
 function hashPassword(password) {
@@ -36,9 +36,29 @@ module.exports.register = async (request, response) => {
     response.status(200).send("User added");
 }
 module.exports.login = async (request, response) => {
-    // console.log('logged in');
-    response.status(200).send("User found");
+    if(request.user.role != 'user'){
+        request.logout((err) => {
+            if(err){
+                console.log(err);
+            }
+        });
+        response.status(401).send("Unauthorized");
+    }else 
+        response.status(200).send("User Logged In");
 }
+
+module.exports.logout = async (request, response) => {
+    if(request.user == null){
+        response.status(400).send("User not Logged in yet");
+    }else{
+        request.logout((err) => {
+            if(err){
+                console.log(err);
+            }
+        });
+        response.status(200).send("User logged out");
+    }
+};
 
 module.exports.hashPassword = hashPassword;
 module.exports.comparePassword = comparePassword;

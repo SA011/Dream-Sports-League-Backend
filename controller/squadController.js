@@ -83,8 +83,65 @@ module.exports.autopick = async (request, response) => {
 
 module.exports.squad = async (request, response) => {
     try{
+        console.log(request.user);
         // response.send(await squadDatabase.getSquad(request.user.user_id));
-        response.send(emptyList);
+        // response.send(emptyList);
+        const mysquad = await squadDatabase.getSquad(request.user.user_id);
+        const curBalance = request.user.balance;
+
+        var ret = {
+            players: {
+                goalkeepers: [],
+                defenders: [],
+                midfielders: [],
+                forwards: []
+            },
+            budget: curBalance
+        };
+        console.log(mysquad);
+        var temp = [];
+        for(var i = 1; i <= 2; i++){
+            const id = mysquad[`goalkeeper_${i}`];
+            console.log(id);
+            if(id){
+                temp.push(id);
+            }
+        }
+        console.log(temp);
+        ret.players.goalkeepers = await playerDatabase.getPlayersByIdWithTeam(temp);
+        temp = [];
+        
+        console.log(ret);
+        for(var i = 1; i <= 5; i++){
+            const id = mysquad[`defender_${i}`];
+            if(id){
+                temp.push(id);
+            }
+        }
+        ret.players.defenders = await playerDatabase.getPlayersByIdWithTeam(temp);
+        temp = [];
+        
+        
+        for(var i = 1; i <= 5; i++){
+            const id = mysquad[`midfielder_${i}`];
+            if(id){
+                temp.push(id);
+            }
+        }
+        ret.players.midfielders = await playerDatabase.getPlayersByIdWithTeam(temp);
+        temp = [];
+        
+        
+        for(var i = 1; i <= 4; i++){
+            const id = mysquad[`forward_${i}`];
+            if(id){
+                temp.push(id);
+            }
+        }
+        ret.players.forwards = await playerDatabase.getPlayersByIdWithTeam(temp);
+        
+        response.send(ret);
+        
     }catch(error){
         response.sendStatus(400);
     }

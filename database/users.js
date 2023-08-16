@@ -9,7 +9,7 @@ const addUserQuery = 'INSERT INTO \
     users (user_id, name, email, team_name, favorite_team, password, balance, point, wildcard, triple_point) \
     VALUES ($1::text, $2::text, $3::text, $4::text, $5, $6::text, $7, $8, $9, $10)';
 const addEmptySquad = 'INSERT INTO squad (user_id) VALUES ($1::text)';
-
+const findUserRoleById = 'SELECT role FROM users WHERE user_id = $1::text';
 
 module.exports.userBalance = async (userid) => {
     const pool = await getConnection();
@@ -51,4 +51,12 @@ module.exports.getUserToShow = async (userid) => {
     release(pool);
     if(res.length == 0)return null;
     return res[0];
+}
+
+module.exports.getUserRole = async (userid) => {
+    const pool = await getConnection();
+    const res = (await pool.query(findUserRoleById, [userid])).rows;
+    release(pool);
+    if(res.length != 1)return null;
+    return res[0].role;
 }

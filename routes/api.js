@@ -11,5 +11,6 @@ router.use('/profile', require('./profile.js'));
 
 router.use('/playingxi', require('./playingXI.js'));
 
+router.use('/admin', require('./admin.js'));
 
 module.exports = router;

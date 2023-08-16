@@ -16,6 +16,12 @@ passport.deserializeUser(async (user_id, done) => {
             // console.log('user not found');
             throw new Error('user not found');
         }
+        const role = await userDatabase.getUserRole(user_id);
+        if(role == null){
+            // console.log('role not found');
+            throw new Error('role not found');
+        }
+        user.role = role;
         done(null, user);
     }catch(error){
         done(error, null);
@@ -33,7 +39,14 @@ passport.use(new Strategy(
                 // console.log('user not found');
                 done(null, null);
             }else if(authController.comparePassword(password, user.password)){
-                done(null, user);
+                const role = await userDatabase.getUserRole(user_id);
+                if(role == null){
+                    // console.log('role not found');
+                    done(null, null);
+                }else{
+                    user.role = role;
+                    done(null, user);
+                }
             }else{
                 // console.log('incorrect password');
                 done(null, null);
@@ -60,10 +73,16 @@ passport.use('local-register', new Strategy(
                 if(userByEmail != null){
                     done(null, null);
                 }
-                const added = await userDatabase.addUser(user_id, request.body.name, request.body.email, request.body.team_name, request.body.favorite_team, authController.hashPassword(password));
+                var added = await userDatabase.addUser(user_id, request.body.name, request.body.email, request.body.team_name, request.body.favorite_team, authController.hashPassword(password));
                 if(added){
-                    const user = await userDatabase.getUser(user_id);
-                    done(null, user);
+                    added = await userDatabase.addUserRole(user_id, 'user');
+                    if(!added){
+                        done(null, null);
+                    }else{
+                        const user = await userDatabase.getUser(user_id);
+                        user.role = 'user';
+                        done(null, user);
+                    }
                 }else{
                     done(null, null);
                 }
