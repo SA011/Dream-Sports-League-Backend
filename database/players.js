@@ -22,6 +22,8 @@ const findPlayerByPositionWithOrder = 'SELECT players.id, players.name AS name, 
                                         WHERE position = $1::text ORDER BY price ASC LIMIT $2::integer';
 const findPlayerByName = `SELECT * FROM players WHERE LOWER(name) LIKE '%' ||$1|| '%'`;
 
+const updatePlayerPointsCommand = 'UPDATE players SET points = $1::integer WHERE id = $2::integer';
+
 module.exports.getPlayerById = async (id) => {
     const pool = await getConnection();
     const res = (await pool.query(findPlayerByID, [id])).rows;
@@ -81,3 +83,8 @@ module.exports.getPlayerByName = async (name) => {
 }
 
 
+module.exports.updatePlayerPoints = async (id, points) => {
+    const pool = await getConnection();
+    const res = (await pool.query(updatePlayerPointsCommand, [points, id]));
+    release(pool);
+}

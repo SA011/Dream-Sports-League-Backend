@@ -11,6 +11,10 @@ const addUserQuery = 'INSERT INTO \
 const addEmptySquad = 'INSERT INTO squad (user_id) VALUES ($1::text)';
 const findUserRoleById = 'SELECT role FROM users WHERE user_id = $1::text';
 
+const updateUserPointsCommand = 'UPDATE users SET point = $1::integer WHERE user_id = $2::text';
+
+const updateUserBalanceCommand = 'UPDATE users SET balance = $1::integer WHERE user_id = $2::text';
+
 module.exports.userBalance = async (userid) => {
     const pool = await getConnection();
     const res = (await pool.query(findUserById, [userid])).rows;
@@ -59,4 +63,16 @@ module.exports.getUserRole = async (userid) => {
     release(pool);
     if(res.length != 1)return null;
     return res[0].role;
+}
+
+module.exports.updateUserPoints = async (userid, points) => {
+    const pool = await getConnection();
+    const res = await pool.query(updateUserPointsCommand, [points, userid]);
+    release(pool);
+}
+
+module.exports.updateUserBalance = async (userid, balance) => {
+    const pool = await getConnection();
+    const res = await pool.query(updateUserBalanceCommand, [balance, userid]);
+    release(pool);
 }
