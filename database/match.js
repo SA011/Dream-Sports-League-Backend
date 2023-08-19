@@ -2,9 +2,9 @@ const { getConnection,  release} = require('./connect.js');
 
 const findMatchInfo = 'SELECT * FROM matches WHERE id = $1::integer';
 
-const findMatchesByWeek = 'SELECT * FROM matches WHERE week = $1::integer';
+const findMatchesByWeek = 'SELECT * FROM matches WHERE game_week = $1::integer';
 
-const updateSimulatedMatch = 'UPDATE matches SET home_score = $1::integer, away_score = $2::integer, finished = true WHERE id = $3::integer';
+const updateSimulatedMatch = 'UPDATE matches SET finished = true WHERE id = $1::integer';
 
 module.exports.getMatchInfo = async (id) => {
     const pool = await getConnection();
@@ -21,8 +21,8 @@ module.exports.getMatchesByWeek = async (week) => {
     return res;
 }
 
-module.exports.updateSimulatedMatch = async (home_score, away_score, id) => {
+module.exports.setMatchFinished = async (id) => {
     const pool = await getConnection();
-    const res = (await pool.query(updateSimulatedMatch, [home_score, away_score, id])).rows;
+    const res = (await pool.query(updateSimulatedMatch, [id])).rows;
     release(pool);
 }

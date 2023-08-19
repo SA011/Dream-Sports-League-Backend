@@ -1,19 +1,28 @@
 const { getConnection, release} = require('./connect.js');
 
 
-const findUserById = 'SELECT * FROM users WHERE user_id = $1::text';
+const findUserById = 'SELECT * FROM users u JOIN roles r ON u.user_id = r.user_id WHERE u.user_id = $1::text';
+
 const findUserByIdShow = 'SELECT u.user_id, u.name, u.email, u.team_name, e.name AS favorite_team, u.balance, u.point, u.wildcard, u.triple_point \
                             FROM users u JOIN  epl_teams e ON u.favorite_team = e.id WHERE u.user_id = $1::text';
+
 const findUserByEmail = 'SELECT * FROM users WHERE email = $1::text';
+
 const addUserQuery = 'INSERT INTO \
     users (user_id, name, email, team_name, favorite_team, password, balance, point, wildcard, triple_point) \
     VALUES ($1::text, $2::text, $3::text, $4::text, $5, $6::text, $7, $8, $9, $10)';
-const addEmptySquad = 'INSERT INTO squad (user_id) VALUES ($1::text)';
-const findUserRoleById = 'SELECT role FROM users WHERE user_id = $1::text';
 
-const updateUserPointsCommand = 'UPDATE users SET point = $1::integer WHERE user_id = $2::text';
+const addEmptySquad = 'INSERT INTO squad (user_id) VALUES ($1::text)';
+
+const addRoleQuery = 'INSERT INTO roles (user_id, role) VALUES ($1::text, $2::text)';
+
+const findUserRoleById = 'SELECT role FROM roles WHERE user_id = $1::text';
+
+const updateUserPointsCommand = 'UPDATE users SET point = point + $1::integer WHERE user_id = $2::text';
 
 const updateUserBalanceCommand = 'UPDATE users SET balance = $1::integer WHERE user_id = $2::text';
+
+
 
 module.exports.userBalance = async (userid) => {
     const pool = await getConnection();
@@ -44,6 +53,7 @@ module.exports.addUser = async (userid, name, email, team_name, favorite_team, p
     const res = await pool.query(addUserQuery, [userid, name, email, team_name, favorite_team, password, 100, 0, 2, 2]);
     if(res.rowCount == 1){
         await pool.query(addEmptySquad, [userid]);
+        await pool.query(addRoleQuery, [userid, 'user']);
     }
     release(pool);
     return res.rowCount == 1;
@@ -65,9 +75,11 @@ module.exports.getUserRole = async (userid) => {
     return res[0].role;
 }
 
-module.exports.updateUserPoints = async (userid, points) => {
+module.exports.updateUserPoints = async (userids, points) => {
     const pool = await getConnection();
-    const res = await pool.query(updateUserPointsCommand, [points, userid]);
+    for(var i = 0; i < userids.length; i++){
+        await pool.query(updateUserPointsCommand, [points, userids[i]]);
+    }
     release(pool);
 }
 

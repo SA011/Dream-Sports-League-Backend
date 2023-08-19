@@ -67,8 +67,8 @@ const checkValidity = async (squad, balance) => {
         // console.log(position);
     }
         
-    console.log(balance);
-    console.log(playerSet.size);
+    // console.log(balance);
+    // console.log(playerSet.size);
     if(playerSet.size != 16)return -1;
     return balance;
 };
@@ -83,7 +83,7 @@ module.exports.autopick = async (request, response) => {
 
 module.exports.squad = async (request, response) => {
     try{
-        console.log(request.user);
+        // console.log(request.user);
         // response.send(await squadDatabase.getSquad(request.user.user_id));
         // response.send(emptyList);
         const mysquad = await squadDatabase.getSquad(request.user.user_id);
@@ -98,20 +98,20 @@ module.exports.squad = async (request, response) => {
             },
             budget: curBalance
         };
-        console.log(mysquad);
+        // console.log(mysquad);
         var temp = [];
         for(var i = 1; i <= 2; i++){
             const id = mysquad[`goalkeeper_${i}`];
-            console.log(id);
+            // console.log(id);
             if(id){
                 temp.push(id);
             }
         }
-        console.log(temp);
+        // console.log(temp);
         ret.players.goalkeepers = await playerDatabase.getPlayersByIdWithTeam(temp);
         temp = [];
         
-        console.log(ret);
+        // console.log(ret);
         for(var i = 1; i <= 5; i++){
             const id = mysquad[`defender_${i}`];
             if(id){

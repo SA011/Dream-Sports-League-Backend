@@ -1,4 +1,6 @@
 const matchDatabase = require('../database/match');
+const eventDatabase = require('../database/event');
+const matchController = require('./matchController');
 module.exports.login = async (request, response) => {
     if(request.user.role != 'admin'){
         request.logout((err) => {
@@ -42,5 +44,7 @@ module.exports.simulateMatch = async (request, response) => {
         response.status(400).send("Match already finished");
     }else{
         //Match simulation here. pending
+        matchController.simulateMatch(matchInfo);
+
     }
 }

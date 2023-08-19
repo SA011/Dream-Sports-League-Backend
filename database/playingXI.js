@@ -22,14 +22,25 @@ const updatePlayingXICommand = 'UPDATE epl_playing_xi SET \
         player_11 = $15::integer \
         WHERE user_id = $1::text AND match_id = $2::integer';
 
-
+const getUsersByMatchAndPlayerCommand = 'SELECT user_id FROM epl_playing_xi WHERE match_id = $1::integer AND \
+        (player_1 = $2::integer OR \
+            player_2 = $2::integer OR \
+            player_3 = $2::integer OR \
+            player_4 = $2::integer OR \
+            player_5 = $2::integer OR \
+            player_6 = $2::integer OR \
+            player_7 = $2::integer OR \
+            player_8 = $2::integer OR \
+            player_9 = $2::integer OR \
+            player_10 = $2::integer OR \
+            player_11 = $2::integer)';
 
 async function addPlayingXI(user_id, match_id, players){
     var params = [user_id, match_id, players.formation, players.captain];
     for(var i = 0; i < 11; i++){
         params.push(players.players[i]);
     }
-    console.log(params);
+    // console.log(params);
     const pool = await getConnection();
     await pool.query(addPlayingXICommand, params);
     release(pool);
@@ -46,7 +57,7 @@ async function updatePlayingXI(user_id, match_id, players){
 };
 
 module.exports.getPlayingXI = async (userid, matchid) => {
-    console.log(userid, matchid);
+    // console.log(userid, matchid);
     const pool = await getConnection();
     const res = (await pool.query(findPlayingXIByUserIDandMatchID, [userid, matchid])).rows;
     release(pool);
@@ -56,11 +67,18 @@ module.exports.getPlayingXI = async (userid, matchid) => {
 
 module.exports.setPlayingXI = async (user_id, match_id, players) => {
     const ret = await this.getPlayingXI(user_id, match_id);
-    console.log(ret);
+    // console.log(ret);
     if(ret.length == 0){
         console.log("Adding Playing XI");
         return await addPlayingXI(user_id, match_id, players);
     }else{
         return await updatePlayingXI(user_id, match_id, players);
     }
+}
+
+module.exports.getUsersByMatchAndPlayer = async (match_id, player_id) => {
+    const pool = await getConnection();
+    const res = (await pool.query(getUsersByMatchAndPlayerCommand, [match_id, player_id])).rows;
+    release(pool);
+    return res;
 }
