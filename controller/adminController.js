@@ -10,7 +10,7 @@ module.exports.login = async (request, response) => {
         });
         response.status(401).send("Unauthorized");
     }else
-        response.status(200).send("User found");
+        response.status(200).send("Admin logged in");
 };
 
 module.exports.logout = async (request, response) => {
@@ -40,11 +40,11 @@ module.exports.simulateMatch = async (request, response) => {
     const matchInfo = await matchDatabase.getMatchInfo(request.params.match_id);
     if(matchInfo == null){
         response.status(400).send("Match not found");
-    }else if(matchInfo.finished){
+    }else if(matchInfo.finished == 1){
         response.status(400).send("Match already finished");
     }else{
         //Match simulation here. pending
         matchController.simulateMatch(matchInfo);
-
+        response.status(200).send("Match simulated");
     }
 }

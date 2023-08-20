@@ -84,6 +84,7 @@ module.exports.getPlayerByName = async (name) => {
 
 
 module.exports.updatePlayerPoints = async (id, points) => {
+    console.log(id, points);
     const pool = await getConnection();
     const res = (await pool.query(updatePlayerPointsCommand, [points, id]));
     release(pool);

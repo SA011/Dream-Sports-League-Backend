@@ -4,7 +4,11 @@ const positionNameConverter = {
     "goalkeepers": "GK",
     "defenders": "DEF",
     "midfielders": "MID",
-    "forwards": "FWD"
+    "forwards": "FWD",
+    "goalkeeper": "GK",
+    "defender": "DEF",
+    "midfielder": "MID",
+    "forward": "FWD"
 };
 
 const invertPositionNameConverter = {

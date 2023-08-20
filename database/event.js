@@ -4,7 +4,7 @@ const playerDatabase = require('./players.js');
 
 const findEventsByMatch = 'SELECT * FROM events WHERE match_id = $1::integer';
 
-const catagoryPointQuery = 'SELECT * FROM catagories WHERE category = $1::text';
+const catagoryPointQuery = 'SELECT * FROM categories WHERE category = $1::text';
 module.exports.getEventByMatch = async (match) => {
     const pool = await getConnection();
     const res = (await pool.query(findEventsByMatch, [match])).rows;
@@ -46,6 +46,7 @@ module.exports.getScoreLine = async (matchInfo) => {
 module.exports.getPoints = async (category) => {
     const pool = await getConnection();
     const res = (await pool.query(catagoryPointQuery, [category])).rows;
+    console.log(res);
     release(pool);
     if(res.length != 1)return null;
     return res[0].points;
