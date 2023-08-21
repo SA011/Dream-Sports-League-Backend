@@ -89,6 +89,13 @@ module.exports.getMatch = async (req, res) => {
                 time: events[i].time
             };
             if(player.team == match.home){
+                if(category == 'GOAL'){
+                    ret.home.score++;
+                }
+                if(category == 'OWN_GOAL'){
+                    ret.away.score++;
+                }
+
                 ret.events.home.push(temp);
                 var j = 0;
                 for(j = 0; j < ret.points.home.length; j++){
@@ -106,6 +113,13 @@ module.exports.getMatch = async (req, res) => {
                 }
 
             }else if(player.team == match.away){
+                if(category == 'GOAL'){
+                    ret.away.score++;
+                }
+                if(category == 'OWN_GOAL'){
+                    ret.home.score++;
+                }
+
                 ret.events.away.push(temp);
                 var j = 0;
                 for(j = 0; j < ret.points.away.length; j++){
