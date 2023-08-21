@@ -14,9 +14,9 @@ module.exports.getEventByMatch = async (match) => {
 
 module.exports.getScoreLine = async (matchInfo) => {
     const pool = await getConnection();
-    const res = (await pool.query(findEventsByMatch, [matchInfo.match_id])).rows;
+    const res = (await pool.query(findEventsByMatch, [matchInfo.id])).rows;
     release(pool);
-    
+    console.log(res);
     var score = {
         home: 0,
         away: 0
@@ -24,17 +24,18 @@ module.exports.getScoreLine = async (matchInfo) => {
 
     for(var i = 0; i < res.length; i++){
         if(res[i].category == 'GOAL'){
-            const player_team_id = await playerDatabase.getPlayerByID(res[i].player_id).team;
-            if(player_team_id == matchInfo.home_team_id){
+            const player_team_id = (await playerDatabase.getPlayerById(res[i].player_id)).team;
+            console.log(player_team_id);
+            if(player_team_id == matchInfo.home){
                 score.home++;
-            }else if(player_team_id == matchInfo.away_team_id){
+            }else if(player_team_id == matchInfo.away){
                 score.away++;
             }
         }else if(res[i].category == 'OWN_GOAL'){
-            const player_team_id = await playerDatabase.getPlayerByID(res[i].player_id).team;
-            if(player_team_id == matchInfo.home_team_id){
+            const player_team_id = await playerDatabase.getPlayerById(res[i].player_id).team;
+            if(player_team_id == matchInfo.home){
                 score.away++;
-            }else if(player_team_id == matchInfo.away_team_id){
+            }else if(player_team_id == matchInfo.away){
                 score.home++;
             }
         }
