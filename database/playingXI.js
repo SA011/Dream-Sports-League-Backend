@@ -40,7 +40,7 @@ async function addPlayingXI(user_id, match_id, players){
     for(var i = 0; i < 11; i++){
         params.push(players.players[i]);
     }
-    console.log(params);
+    // console.log(params);
     const pool = await getConnection();
     await pool.query(addPlayingXICommand, params);
     release(pool);
@@ -67,7 +67,7 @@ module.exports.getPlayingXI = async (userid, matchid) => {
 
 module.exports.setPlayingXI = async (user_id, match_id, players) => {
     const ret = await this.getPlayingXI(user_id, match_id);
-    console.log(ret);
+    // console.log(ret);
     if(ret == null || ret.length == 0){
         console.log("Adding Playing XI");
         return await addPlayingXI(user_id, match_id, players);
@@ -82,3 +82,5 @@ module.exports.getUsersByMatchAndPlayer = async (match_id, player_id) => {
     release(pool);
     return res;
 }
+
+

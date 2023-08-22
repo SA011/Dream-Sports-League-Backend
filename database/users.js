@@ -25,6 +25,7 @@ const updateUserPointsCommand = 'UPDATE users SET point = point + $1::integer WH
 
 const updateUserBalanceCommand = 'UPDATE users SET balance = $1::integer WHERE user_id = $2::text';
 
+const findUsers = 'SELECT u.user_id FROM users u JOIN roles r ON r.user_id = u.user_id WHERE r.role = \'user\'';
 
 async function isEmailValid(email) {
     const valid = await emailValidator.validate(email);
@@ -47,6 +48,12 @@ module.exports.getUser = async (userid) => {
     release(pool);
     if(res.length == 0)return null;
     return res[0];
+}
+module.exports.getUsers = async () => {
+    const pool = await getConnection();
+    const res = (await pool.query(findUsers)).rows;
+    release(pool);
+    return res;
 }
 
 module.exports.getUserByEmail = async (email) => {

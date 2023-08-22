@@ -2,6 +2,7 @@ const { request, response } = require('express');
 const playingXIDatabase = require('../database/playingXI.js');
 const squadDatabase = require('../database/squad.js');
 const playerController = require('./playerController.js');
+const userDatabase = require('../database/users.js');
 // const playerDatabase = require('../database/players.js');
 const matchDatabase = require('../database/match.js');
 
@@ -268,6 +269,8 @@ module.exports.setPlayingXI = async (request, response) => {
             return;
         }
 
+        
+
         const squad = await squadDatabase.getSquad(user_id);
         
         // console.log(squad);
@@ -276,13 +279,18 @@ module.exports.setPlayingXI = async (request, response) => {
             return;
         }
 
-        // modifiedPlayingXI = changeFormate(formation, captain, playingxi);
-
-        const modifiedPlayingXI = {
-            captain: captain,
+        var modifiedPlayingXI = {
             formation: formation,
-            players : playingxi            
+            captain: captain,
+            players: []
         };
+
+        for(var position in playingxi){
+            for(var i = 0; i < playingxi[position].length; i++){
+                modifiedPlayingXI.players.push(playingxi[position][i]);
+            }
+        }
+
 
         // console.log(modifiedPlayingXI);
 
@@ -291,10 +299,41 @@ module.exports.setPlayingXI = async (request, response) => {
             return;
         }
         // console.log(modifiedPlayingXI);
-        await playingXIDatabase.setPlayingXI(user_id, match_id, modifiedPlayingXI).then(() => {
+        await playingXIDatabase.setPlayingXI(user_id, match_id, modifiedPlayingXI).then((res) => {
             response.sendStatus(202);
         });
     } catch (error) {
         response.status(400);
     }
 };
+
+module.exports.getUsersByMatchAndPlayer = async (match_id, player_id) => {
+    const users = await userDatabase.getUsers();
+    var captain = [];
+    var notCaptain = [];
+    for(var i = 0; i < users.length; i++){
+        var playingXI = await playingXIDatabase.getPlayingXI(users[i].user_id, match_id);
+        const squad = await squadDatabase.getSquad(users[i].user_id);
+        if(squad == null || squad.goalkeeper_1 == null)continue;
+        if(playingXI == null){
+            await setPlayingXIToDefault(users[i].user_id, squad, match_id);
+            playingXI = await playingXIDatabase.getPlayingXI(users[i].user_id, match_id);
+        }else if(!checkSquadWithPlayingXI(squad, changeFormate(playingXI))){
+            // console.log('HERE');
+            await setPlayingXIToDefault(user_id, squad, match_id).then(async () => {
+                playingXI = await playingXIDatabase.getPlayingXI(user_id, match_id);
+            });
+        }
+        for(var j = 1; j <= 11; j++){
+            if(playingXI[`player_${j}`] == player_id){
+                if(playingXI.captain == player_id){
+                    captain.push(users[i].user_id);
+                }else{
+                    notCaptain.push(users[i].user_id);
+                }
+                break;
+            }
+        }
+    }
+    return {captain: captain, notCaptain: notCaptain};
+}
