@@ -16,14 +16,14 @@ module.exports.login = async (request, response) => {
 
 module.exports.logout = async (request, response) => {
     if(request.user == null){
-        response.status(400).send("User not Logged in yet");
+        response.status(400).send("Admin not Logged in yet");
     }else{
         request.logout((err) => {
             if(err){
                 console.log(err);
             }
         });
-        response.status(200).send("User logged out");
+        response.status(200).send("Admin logged out");
     }
 };
 
@@ -42,22 +42,40 @@ module.exports.getMatchWeek = async (request, response) => {
             matchWeek[i].away = (await teamDatabase.getTeamInfo(matchWeek[i].away)).name;
             
         }
-        console.log(matchWeek);
+        // console.log(matchWeek);
         response.status(200).send(matchWeek);
     }
 };
 
 module.exports.simulateMatch = async (request, response) => {
-    console.log(request.params);
+    // console.log(request.params);
     const matchInfo = await matchDatabase.getMatchInfo(request.params.match_id);
     if(matchInfo == null){
         response.status(400).send("Match not found");
     }else if(matchInfo.finished == 1){
         response.status(400).send("Match already finished");
     }else{
-        //Match simulation here. pending
+        //Match simulation here. 
         matchController.simulateMatch(matchInfo).then(() => {
             response.status(200).send("Match simulated");
+        }).catch((err) => {
+            console.log(err);
+            response.status(500).send("Internal Server Error");
+        });
+    }
+}
+
+module.exports.unSimulateMatch = async (request, response) => {
+    // console.log(request.params);
+    const matchInfo = await matchDatabase.getMatchInfo(request.params.match_id);
+    if(matchInfo == null){
+        response.status(400).send("Match not found");
+    }else if(matchInfo.finished == 0){
+        response.status(400).send("Match is not finished");
+    }else{
+        //Match unSimulation here.
+        matchController.unSimulateMatch(matchInfo).then(() => {
+            response.status(200).send("Match unSimulated");
         }).catch((err) => {
             console.log(err);
             response.status(500).send("Internal Server Error");

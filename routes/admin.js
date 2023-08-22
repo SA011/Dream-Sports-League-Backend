@@ -9,6 +9,8 @@ router.post('/logout', adminController.logout);
 
 router.get('/matchweek/:week', adminController.getMatchWeek);
 
+router.post('/matchweek/unsimulate/:match_id', adminController.unSimulateMatch);
+
 router.post('/matchweek/:match_id', adminController.simulateMatch);
 
 module.exports = router;

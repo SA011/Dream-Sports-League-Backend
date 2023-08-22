@@ -4,7 +4,7 @@ const findMatchInfo = 'SELECT * FROM matches WHERE id = $1::integer';
 
 const findMatchesByWeek = 'SELECT * FROM matches WHERE game_week = $1::integer';
 
-const updateSimulatedMatch = 'UPDATE matches SET finished = true WHERE id = $1::integer';
+const updateSimulatedMatch = 'UPDATE matches SET finished = $2::boolean WHERE id = $1::integer';
 
 module.exports.getMatchInfo = async (id) => {
     const pool = await getConnection();
@@ -23,6 +23,12 @@ module.exports.getMatchesByWeek = async (week) => {
 
 module.exports.setMatchFinished = async (id) => {
     const pool = await getConnection();
-    const res = (await pool.query(updateSimulatedMatch, [id])).rows;
+    const res = (await pool.query(updateSimulatedMatch, [id, true])).rows;
+    release(pool);
+}
+
+module.exports.setMatchUnFinished = async (id) => {
+    const pool = await getConnection();
+    const res = (await pool.query(updateSimulatedMatch, [id, false])).rows;
     release(pool);
 }
