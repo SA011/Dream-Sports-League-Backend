@@ -13,7 +13,7 @@ module.exports.simulateMatch = async (matchInfo) => {
         // console.log(points);
         const users = await playingXIDatabase.getUsersByMatchAndPlayer(matchInfo.id, events[i].player_id);
         await usersDatabase.updateUserPoints(users, points);
-        await playerDatabase.updatePlayerPoints(events[i].player_id, points);
+        await playerDatabase.updatePlayerPoints(events[i].player_id, points, events[i].category, 1);
     }
     console.log('Match simulated');
     await matchDatabase.setMatchFinished(matchInfo.id);
@@ -29,7 +29,7 @@ module.exports.unSimulateMatch = async (matchInfo) => {
         // console.log(points);
         const users = await playingXIDatabase.getUsersByMatchAndPlayer(matchInfo.id, events[i].player_id);
         await usersDatabase.updateUserPoints(users, -points);
-        await playerDatabase.updatePlayerPoints(events[i].player_id, -points);
+        await playerDatabase.updatePlayerPoints(events[i].player_id, -points, events[i].category, -1);
     }
     console.log('Match unSimulated');
     await matchDatabase.setMatchUnFinished(matchInfo.id);
