@@ -15,8 +15,8 @@ function checkSquadWithPlayingXI(squad, playingXI){
     for(var i = 1; i <= 11; i++){
         playerSet.add(playingXI.players[i - 1]);
     }
-    console.log(playerSet);
-    console.log(playingXI);
+    // console.log(playerSet);
+    // console.log(playingXI);
 
     var count = 0;
     for(var i = 1; i <= 2; i++){
@@ -42,30 +42,94 @@ function checkSquadWithPlayingXI(squad, playingXI){
             count++;
         }
     }
-    console.log(count);
+    // console.log(count);
     return count == 11 && playerSet.size == 11 && playerSet.has(playingXI.captain);
 }
 
-function changeFormate(formation, captain, playingXI){
-    // console.log(playingXI);
+function changeFormate(playingXI){
     var ret = {
-        formation: formation,
-        captain: captain,
+        captain: playingXI.captain,
+        formation: playingXI.formation,
         players: []
-    };
-    for(var position in playingXI){
-        console.log(position);
-        const players = playingXI[position];
-        console.log(players);
-        for(var i = 0; i < players.length; i++){
-            ret.players.push(players[i]);
-        }
     }
+    for(var i = 1; i <= 11; i++)
+        ret.players.push(playingXI[`player_${i}`]);
     return ret;
 }
 
+async function createPlayingXI(user_id, squad, match_id){
+    var players = {
+        captain: null,
+        formation: '4-3-3',
+        players: []
+    }
+    for(var i = 1; i <= 2; i++){
+        if(squad[`goalkeeper_${i}`] != null){
+            players.players.push(squad[`goalkeeper_${i}`]);
+            break;
+        }
+    }
+    var cnt = 0;
+    for(var i = 1; i <= 5; i++){
+        if(cnt == 4){
+            break;
+        }
+        if(squad[`defender_${i}`] != null){
+            players.players.push(squad[`defender_${i}`]);
+            cnt++;
+        }
+    }
+    cnt = 0;
+    for(var i = 1; i <= 5; i++){
+        if(cnt == 3){
+            break;
+        }
+        if(squad[`midfielder_${i}`] != null){
+            players.players.push(squad[`midfielder_${i}`]);
+            cnt++;
+        }
+    }
+    cnt = 0;
+    for(var i = 1; i <= 4; i++){
+        if(cnt == 3){
+            break;
+        }
+        if(squad[`forward_${i}`] != null){
+            players.players.push(squad[`forward_${i}`]);
+            cnt++;
+        }
+    }
+    players.captain = players.players[0];
+    // console.log(players);
+    await playingXIDatabase.setPlayingXI(user_id, match_id, players);
+}
+
+async function setPlayingXIToDefault(user_id, squad, match_id){
+    const defaultPlayingXI = await playingXIDatabase.getPlayingXI(user_id, 0);
+    // console.log(defaultPlayingXI);
+    if(defaultPlayingXI == null || !checkSquadWithPlayingXI(squad, changeFormate(defaultPlayingXI))){
+        await createPlayingXI(user_id, squad, 0);
+        if(match_id != 0){
+            await createPlayingXI(user_id, squad, match_id);
+        }
+        return;
+    }
+    if(match_id == 0)return;
+    var players = {
+        captain: defaultPlayingXI.captain,
+        formation: defaultPlayingXI.formation,
+        players: []
+    };
+
+    for(var i = 1; i <= 11; i++){
+        players.players.push(defaultPlayingXI[`player_${i}`]);
+    }
+    await playingXIDatabase.setPlayingXI(user_id, match_id, players);
+}
+
+
 module.exports.getPlayingXI = async (request, response) => {
-    console.log(request);
+    // console.log(request);
     try {
         const {user_id} = request.user;
         var match_id;
@@ -75,67 +139,26 @@ module.exports.getPlayingXI = async (request, response) => {
         else{
             match_id = request.params.match_id;
         }
-        console.log(match_id);
+        // console.log(match_id);
         var playingXI = await playingXIDatabase.getPlayingXI(user_id, match_id);
         const squad = await squadDatabase.getSquad(user_id);
         const matchInfo = await matchDatabase.getMatchInfo(match_id);
-        console.log(matchInfo);
-        console.log(playingXI);
-        console.log(squad);
+        // console.log(matchInfo);
+        // console.log(playingXI);
+        // console.log(squad);
         
-        if(playingXI == null){
-            console.log('No playingXI found');
-            console.log('Creating new playingXI');
-            console.log(squad);
-            console.log(matchInfo);
-            var players = {
-                captain: null,
-                formation: '4-3-3',
-                players: []
-            }
-            for(var i = 1; i <= 2; i++){
-                if(squad[`goalkeeper_${i}`] != null){
-                    players.players.push(squad[`goalkeeper_${i}`]);
-                    break;
-                }
-            }
-            var cnt = 0;
-            for(var i = 1; i <= 5; i++){
-                if(cnt == 4){
-                    break;
-                }
-                if(squad[`defender_${i}`] != null){
-                    players.players.push(squad[`defender_${i}`]);
-                    cnt++;
-                }
-            }
-            cnt = 0;
-            for(var i = 1; i <= 5; i++){
-                if(cnt == 3){
-                    break;
-                }
-                if(squad[`midfielder_${i}`] != null){
-                    players.players.push(squad[`midfielder_${i}`]);
-                    cnt++;
-                }
-            }
-            cnt = 0;
-            for(var i = 1; i <= 4; i++){
-                if(cnt == 3){
-                    break;
-                }
-                if(squad[`forward_${i}`] != null){
-                    players.players.push(squad[`forward_${i}`]);
-                    cnt++;
-                }
-            }
-            players.captain = players.players[0];
-            console.log(players);
-            await playingXIDatabase.setPlayingXI(user_id, match_id, players);
-            
-            playingXI = await playingXIDatabase.getPlayingXI(user_id, match_id);
-            console.log(playingXI);
+        if(playingXI == null){ 
+            await setPlayingXIToDefault(user_id, squad, match_id).then(async () => {
+                playingXI = await playingXIDatabase.getPlayingXI(user_id, match_id);
+            });
+            // console.log(playingXI);
+        }else if(!checkSquadWithPlayingXI(squad, changeFormate(playingXI))){
+            // console.log('HERE');
+            await setPlayingXIToDefault(user_id, squad, match_id).then(async () => {
+                playingXI = await playingXIDatabase.getPlayingXI(user_id, match_id);
+            });
         }
+        // console.log(playingXI);
         var ret = {
             match_id: match_id,
             match_time: matchInfo.time,
@@ -159,7 +182,7 @@ module.exports.getPlayingXI = async (request, response) => {
 
         var all = [];
         
-        console.log('HERE');
+        // console.log('HERE');
         if(playingXI != null){
             
             for(var i = 1; i <= 11; i++){
@@ -177,8 +200,8 @@ module.exports.getPlayingXI = async (request, response) => {
         }
         // console.log(ret);
         temp = [];
-        console.log(all);
-        console.log(squad);
+        // console.log(all);
+        // console.log(squad);
         for(var i = 1; i <= 2; i++){
             if(squad[`goalkeeper_${i}`] != null && !all.includes(squad[`goalkeeper_${i}`])){
                 // ret.bench.goalkeepers.push(await playerDatabase.getPlayerByIdWithTeam(squad[`goalkeeper_${i}`]));
@@ -207,13 +230,13 @@ module.exports.getPlayingXI = async (request, response) => {
                 temp.push(squad[`forward_${i}`]);
             }
         }
-        console.log(temp);
+        // console.log(temp);
         const playerInfos = await playerController.getPlayersByIdWithTeam(temp);
         // console.log(playerInfos);
         for(var i = 0; i < playerInfos.length; i++){
             ret.bench[playerInfos[i].position].push(playerInfos[i]);
         }
-        console.log(ret);
+        // console.log(ret);
         response.send(ret);
 
     } catch (error) {
@@ -238,7 +261,7 @@ module.exports.setPlayingXI = async (request, response) => {
             response.status(400);
             return;
         }
-        console.log(formation, captain, playingxi);
+        // console.log(formation, captain, playingxi);
 
         if(checkFormation(formation, playingxi) == false){
             response.status(400);
@@ -247,7 +270,7 @@ module.exports.setPlayingXI = async (request, response) => {
 
         const squad = await squadDatabase.getSquad(user_id);
         
-        console.log(squad);
+        // console.log(squad);
         if(squad == null){
             response.status(400);
             return;
@@ -267,10 +290,10 @@ module.exports.setPlayingXI = async (request, response) => {
             response.status(400);
             return;
         }
-        console.log(modifiedPlayingXI);
-        await playingXIDatabase.setPlayingXI(user_id, match_id, modifiedPlayingXI);
-
-        response.sendStatus(202);
+        // console.log(modifiedPlayingXI);
+        await playingXIDatabase.setPlayingXI(user_id, match_id, modifiedPlayingXI).then(() => {
+            response.sendStatus(202);
+        });
     } catch (error) {
         response.status(400);
     }

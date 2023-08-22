@@ -51,20 +51,20 @@ const checkValidity = async (squad, balance) => {
             const x = playerInPosition[i];
             // console.log(x);
             // console.log(await playerController.getPlayerPosition(x));
-            const curPos = await playerController.getPlayerPosition(x);
-            if((curPos != position)){
-                console.log(`${x} is ${curPos} but got ${position}`);
+            const playerInfo = await playerController.getPlayerById(x);
+            console.log(playerInfo);
+            if((playerInfo.position != position)){
+                console.log(`${x} is ${playerInfo.position} but got ${position}`);
                 // console.log(`${x} is ${await playerController.getPlayerPosition(x)} but tried ${position}`);
                 return -1;
             }
             // console.log(x);
             playerSet.add(x);
-            const price = await playerController.playerPrice(x);
             // console.log(price);
-            balance -= price;
+            balance -= playerInfo.price;
         }
 
-        // console.log(position);
+        console.log(position);
     }
         
     // console.log(balance);
@@ -88,7 +88,7 @@ module.exports.squad = async (request, response) => {
         // response.send(emptyList);
         const mysquad = await squadDatabase.getSquad(request.user.user_id);
         const curBalance = request.user.balance;
-
+        // console.log(mysquad);
         var ret = {
             players: {
                 goalkeepers: [],
@@ -150,6 +150,7 @@ module.exports.squad = async (request, response) => {
 module.exports.buildSquad = async (request, response) => {
     try{
         const squad = request.body;
+        console.log(squad);
         const curBalance = await checkValidity(squad, 100);//await userController.getBalance(userID));
         if(curBalance < 0){
             console.log('Invalid squad addition');

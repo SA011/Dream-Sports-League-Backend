@@ -10,7 +10,7 @@ module.exports.getFixture = async (req, res) => {
     }
     
     const matches = await matchDatabase.getMatchesByWeek(week);
-    console.log(matches);
+    // console.log(matches);
     var ret = {
         matches: []
     };
@@ -37,7 +37,7 @@ module.exports.getFixture = async (req, res) => {
         } 
         if(matches[i].finished == 1){
             var t = await eventDatabase.getScoreLine(matches[i]);
-            console.log(t);
+            // console.log(t);
             temp.home.score = t.home;
             temp.away.score = t.away;
         }
@@ -47,7 +47,7 @@ module.exports.getFixture = async (req, res) => {
 }
 
 module.exports.getMatch = async (req, res) => {
-    console.log('getMatch');
+    // console.log('getMatch');
     const match_id = req.params.id;
     const match = await matchDatabase.getMatchInfo(match_id);
     const events = await eventDatabase.getEventByMatch(match_id);

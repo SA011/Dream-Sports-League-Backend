@@ -5,7 +5,12 @@ const  passport = require('passport');
 
 passport.serializeUser((user, done) => {
     // console.log(user);
-    done(null, user.user_id);
+    try{
+        done(null, user.user_id);
+    }catch(error){
+        done(error, null);
+    }
+
 });
 
 passport.deserializeUser(async (user_id, done) => {
@@ -14,7 +19,7 @@ passport.deserializeUser(async (user_id, done) => {
         const user = await userDatabase.getUser(user_id);
         if(user == null){
             // console.log('user not found');
-            throw new Error('user not found');
+            throw new Error('Unauthorized');
         }
         done(null, user);
     }catch(error){
@@ -54,23 +59,8 @@ passport.use('local-register', new Strategy(
     },
     async (request, user_id, password, done) => {
         try {
-            const user = await userDatabase.getUser(user_id);
-            if(user == null){
-                const userByEmail = await userDatabase.getUserByEmail(request.body.email);
-                if(userByEmail != null){
-                    done(null, null);
-                }
-                var added = await userDatabase.addUser(user_id, request.body.name, request.body.email, request.body.team_name, request.body.favorite_team, authController.hashPassword(password));
-                if(added){
-                    const user = await userDatabase.getUser(user_id);
-                    done(null, user);
-                
-                }else{
-                    done(null, null);
-                }
-            }else{
-                done(null, null);
-            }
+            const user = await userDatabase.createUser(user_id, request.body.name, request.body.email, request.body.team_name, request.body.favorite_team, authController.hashPassword(password));
+            done(null, user);
         }catch(error){
             done(error, null);
         }

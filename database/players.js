@@ -28,7 +28,7 @@ module.exports.getPlayerById = async (id) => {
     const pool = await getConnection();
     const res = (await pool.query(findPlayerByID, [id])).rows;
     release(pool);
-    console.log(res);
+    // console.log(res);
     if(res.length != 1)return null;
     return res[0];
 }

@@ -36,27 +36,37 @@ module.exports.register = async (request, response) => {
     response.status(200).send("User added");
 }
 module.exports.login = async (request, response) => {
-    if(request.user.role != 'user'){
-        request.logout((err) => {
-            if(err){
-                console.log(err);
-            }
-        });
-        response.status(401).send("Unauthorized");
-    }else 
-        response.status(200).send("User Logged In");
+    try{
+        if(request.user.role != 'user'){
+            request.logout((err) => {
+                if(err){
+                    console.log(err);
+                }
+            });
+            response.status(401).send("Unauthorized");
+        }else 
+            response.status(200).send("User Logged In");
+    }catch(err){
+        console.log(err);
+        response.status(400).send("Unauthorized");
+    }
 }
 
 module.exports.logout = async (request, response) => {
-    if(request.user == null){
+    try{
+        if(request.user == null){
+            response.status(400).send("User not Logged in yet");
+        }else{
+            request.logout((err) => {
+                if(err){
+                    console.log(err);
+                }
+            });
+            response.status(200).send("User logged out");
+        }
+    }catch(err){
+        console.log(err);
         response.status(400).send("User not Logged in yet");
-    }else{
-        request.logout((err) => {
-            if(err){
-                console.log(err);
-            }
-        });
-        response.status(200).send("User logged out");
     }
 };
 

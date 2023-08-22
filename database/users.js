@@ -1,4 +1,5 @@
 const { getConnection, release} = require('./connect.js');
+const emailValidator = require('deep-email-validator');
 
 
 const findUserById = 'SELECT * FROM users u JOIN roles r ON u.user_id = r.user_id WHERE u.user_id = $1::text';
@@ -16,12 +17,20 @@ const addEmptySquad = 'INSERT INTO squad (user_id) VALUES ($1::text)';
 
 const addRoleQuery = 'INSERT INTO roles (user_id, role) VALUES ($1::text, $2::text)';
 
+const addEmptyPlayingXI = 'INSERT INTO epl_playing_xi (user_id, match_id, formation) VALUES ($1::text, $2::integer, $3::text)';
+
 const findUserRoleById = 'SELECT role FROM roles WHERE user_id = $1::text';
 
 const updateUserPointsCommand = 'UPDATE users SET point = point + $1::integer WHERE user_id = $2::text';
 
 const updateUserBalanceCommand = 'UPDATE users SET balance = $1::integer WHERE user_id = $2::text';
 
+
+async function isEmailValid(email) {
+    const valid = await emailValidator.validate(email);
+    // return valid.valid;
+    return valid.validators.regex.valid;
+}
 
 
 module.exports.userBalance = async (userid) => {
@@ -54,6 +63,7 @@ module.exports.addUser = async (userid, name, email, team_name, favorite_team, p
     if(res.rowCount == 1){
         await pool.query(addEmptySquad, [userid]);
         await pool.query(addRoleQuery, [userid, 'user']);
+        await pool.query(addEmptyPlayingXI, [userid, 0, '4-3-3']);
     }
     release(pool);
     return res.rowCount == 1;
@@ -87,4 +97,16 @@ module.exports.updateUserBalance = async (userid, balance) => {
     const pool = await getConnection();
     const res = await pool.query(updateUserBalanceCommand, [balance, userid]);
     release(pool);
+}
+
+module.exports.createUser = async (user_id, name, email, team_name, favorite_team, password) => {
+    if(!(await isEmailValid(email)))return null;
+    const user = await this.getUser(user_id);
+    if(user != null)return null;
+    const userByEmail = await this.getUserByEmail(email);
+    if(userByEmail != null)return null;
+
+    const added = await this.addUser(user_id, name, email, team_name, favorite_team, password);
+    if(!added)return null;
+    return await this.getUser(user_id);
 }

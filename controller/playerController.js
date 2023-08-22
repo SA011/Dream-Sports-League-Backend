@@ -30,13 +30,13 @@ module.exports.allPlayerWithPosition = async (request, response) => {
 
 module.exports.getPlayerPosition = async (playerid) => {
     // console.log(playerid);
-    res = (await playerDatabase.getPlayerById(playerid));
+    var res = (await playerDatabase.getPlayerById(playerid));
     if(res.length == 0)return 'none';
     return invertPositionNameConverter[res[0].position];
 };
 
 module.exports.playerPrice = async (playerid) => {
-    res = (await playerDatabase.getPlayerById(playerid));
+    var res = (await playerDatabase.getPlayerById(playerid));
     if(res.length == 0)return -1;
     return res[0].price;
 };
@@ -48,3 +48,9 @@ module.exports.getPlayersByIdWithTeam = async(ids) => {
     }
     return res;
 };
+
+module.exports.getPlayerById = async(id) => {
+    var res = await playerDatabase.getPlayerById(id);
+    res.position = invertPositionNameConverter[res.position];
+    return res;
+}
