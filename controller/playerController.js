@@ -1,6 +1,6 @@
 const playerDatabase = require('../database/players.js');
 const squadDatabase = require('../database/squad.js');
-
+const levelDatabase = require('../database/level.js');
 const positionNameConverter = {
     "goalkeepers": "GK",
     "defenders": "DEF",
@@ -20,9 +20,18 @@ const invertPositionNameConverter = {
 };
 module.exports.allPlayerWithPosition = async (request, response) => {
     try{
+        const userLevel = await levelDatabase.getLevel(request.user.points);
         var { position } = request.params;
         position = positionNameConverter[position];
-        const ret = await playerDatabase.getPlayerByPosition(position);
+        var ret = await playerDatabase.getPlayerByPosition(position);
+        for(var i = 0; i < ret.length; i++){
+            const playerLevel = await levelDatabase.getPlayerLevel(ret[i].overall);
+            if(playerLevel.level > userLevel.level){
+                ret[i].locked = true;
+            }else{
+                ret[i].locked = false;
+            }
+        }
         response.send(ret);
     }catch(error){
         response.status(400);
