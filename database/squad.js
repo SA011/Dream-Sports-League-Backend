@@ -26,6 +26,9 @@ const updateBalance = 'UPDATE users SET \
 
 const getSquadCommand = 'SELECT * FROM squad WHERE user_id = $1::text'
 
+
+const updateWildCardCommand = 'UPDATE users SET wildcard = $1::integer WHERE user_id = $2::text'
+
 module.exports.buildSquad = async (userid, userSquad, curBalance) => {
     var params = [];
     for(var position in userSquad){
@@ -47,4 +50,40 @@ module.exports.getSquad = async (userid) => {
     release(pool);
     if(res.length != 1)return null;
     return res[0];
+}
+
+module.exports.updatePlayer = async (userid, oldplayerid, newplayerid) => {
+    // console.log(userid);
+    const squad = await this.getSquad(userid);
+    // console.log(squad);
+    // console.log(oldplayerid);
+    // console.log(newplayerid);
+    for(var position in squad){
+        if(position == 'user_id')continue;
+        if(squad[position] == newplayerid){
+            return false;
+        }
+    }
+    var pos = null;
+    for(var position in squad){
+        if(position == 'user_id')continue;
+        if(squad[position] == oldplayerid){
+            pos = position;
+        }
+    }
+    if(pos == null)return false;
+    // console.log(pos);
+    const pool = await getConnection();
+
+    const updatePlayerCommand = `UPDATE squad SET ${pos} = $1::integer WHERE user_id = $2::text`;
+    await pool.query(updatePlayerCommand, [newplayerid, userid]);
+    release(pool);
+    return true;
+}
+
+module.exports.updateWildCard = async (userid, wildcard) => {
+    const pool = await getConnection();
+    await pool.query(updateWildCardCommand, [wildcard, userid]);
+    release(pool);
+    return true;
 }

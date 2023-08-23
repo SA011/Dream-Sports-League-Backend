@@ -1,9 +1,7 @@
 const { Router } = require('express');
-const userController = require('../controller/userController');
-const { use } = require('passport');
-
-
 const router = Router();
+const transferWindowController = require('../controller/transferWindowController.js');
+
 
 router.use((req, res, next) => {
     if(req.user == null || req.user.role != 'user'){
@@ -13,7 +11,7 @@ router.use((req, res, next) => {
     }
 });
 
-
-router.get('', userController.getUserInfo);
+router.get('/', transferWindowController.getTransferWindow);
+router.post('/', transferWindowController.confirmTransfer);
 
 module.exports = router;

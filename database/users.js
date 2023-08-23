@@ -23,7 +23,7 @@ const findUserRoleById = 'SELECT role FROM roles WHERE user_id = $1::text';
 
 const updateUserPointsCommand = 'UPDATE users SET point = point + $1::integer WHERE user_id = $2::text';
 
-const updateUserBalanceCommand = 'UPDATE users SET balance = $1::integer WHERE user_id = $2::text';
+const updateUserBalanceCommand = 'UPDATE users SET balance = $1::double precision WHERE user_id = $2::text';
 
 const findUsers = 'SELECT u.user_id FROM users u JOIN roles r ON r.user_id = u.user_id WHERE r.role = \'user\'';
 
