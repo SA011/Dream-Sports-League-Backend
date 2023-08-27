@@ -20,6 +20,23 @@ const findPlayerByIDwithTeam5 = 'SELECT players.id, players.name AS name, epl_te
 const findPlayerByPositionWithOrder = 'SELECT players.id, players.name AS name, epl_teams.name AS team , players.overall, players.price, players.points \
                                         FROM players JOIN epl_teams on players.team = epl_teams.id \
                                         WHERE position = $1::text ORDER BY price ASC LIMIT $2::integer';
+
+
+
+const findPlayerByPositionWithOrderDESC = 'SELECT players.id, players.name AS name, epl_teams.name AS team , players.overall, players.price, players.points, players.position \
+                                        FROM players JOIN epl_teams on players.team = epl_teams.id \
+                                        WHERE position = $1::text ORDER BY players.overall DESC, players.points DESC LIMIT $2::integer';
+
+const findPlayerByPositionWithOrderPointsDESC = 'SELECT players.id, players.name AS name, epl_teams.name AS team , players.overall, players.price, players.points, players.position \
+                                        FROM players JOIN epl_teams on players.team = epl_teams.id \
+                                        WHERE position = $1::text ORDER BY players.points DESC, players.overall DESC LIMIT $2::integer';
+
+const findPlayerByPositionWithOrderRatioDESC = 'SELECT players.id, players.name AS name, epl_teams.name AS team , players.overall, players.price, players.points, players.position, \
+                                        (players.overall * $3::double precision + players.points * $4::double precision) AS RATIO\
+                                        FROM players JOIN epl_teams on players.team = epl_teams.id \
+                                        WHERE position = $1::text ORDER BY RATIO DESC, players.overall DESC, players.points DESC LIMIT $2::integer';
+
+
 const findPlayerByName = `SELECT * FROM players WHERE LOWER(name) LIKE '%' ||$1|| '%'`;
 
 const updatePlayerPointsCommand = 'UPDATE players SET points = (points + $1::integer), goals = goals + $2::integer, assists = assists + $3::integer, cleansheets = cleansheets + $4::integer, \
@@ -72,6 +89,24 @@ module.exports.getPlayerByPosition = async (pos) => {
 module.exports.getPlayerByPositionWithSortedOrder = async (pos, count) => {
     const pool = await getConnection();
     const res = (await pool.query(findPlayerByPositionWithOrder, [pos, count])).rows;
+    release(pool);
+    return res;
+}
+module.exports.getPlayerByPositionWithSortedOrderDESC = async (pos, count) => {
+    const pool = await getConnection();
+    const res = (await pool.query(findPlayerByPositionWithOrderDESC, [pos, count])).rows;
+    release(pool);
+    return res;
+}
+module.exports.getPlayerByPositionWithSortedOrderPointsDESC = async (pos, count) => {
+    const pool = await getConnection();
+    const res = (await pool.query(findPlayerByPositionWithOrderPointsDESC, [pos, count])).rows;
+    release(pool);
+    return res;
+}
+module.exports.getPlayerByPositionWithSortedOrderRatioDESC = async (pos, count, ratioOfOverallToPoints) => {
+    const pool = await getConnection();
+    const res = (await pool.query(findPlayerByPositionWithOrderRatioDESC, [pos, count, ratioOfOverallToPoints, 1 - ratioOfOverallToPoints])).rows;
     release(pool);
     return res;
 }

@@ -13,4 +13,6 @@ router.post('/matchweek/unsimulate/:match_id', adminController.unSimulateMatch);
 
 router.post('/matchweek/:match_id', adminController.simulateMatch);
 
+router.get('/bestxi', adminController.getBestXI);
+
 module.exports = router;

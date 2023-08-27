@@ -18,7 +18,7 @@ function checkSquadWithPlayingXI(squad, playingXI){
     }
     // console.log(playerSet);
     // console.log(playingXI);
-
+    // console.log(squad);
     var count = 0;
     for(var i = 1; i <= 2; i++){
         if(squad[`goalkeeper_${i}`] != null && playerSet.has(squad[`goalkeeper_${i}`])){
@@ -282,20 +282,22 @@ module.exports.setPlayingXI = async (request, response) => {
         var modifiedPlayingXI = {
             formation: formation,
             captain: captain,
-            players: []
+            // players: []
+            players: playingxi
         };
 
-        for(var position in playingxi){
-            for(var i = 0; i < playingxi[position].length; i++){
-                modifiedPlayingXI.players.push(playingxi[position][i]);
-            }
-        }
+        // for(var position in playingxi){
+        //     for(var i = 0; i < playingxi[position].length; i++){
+        //         modifiedPlayingXI.players.push(playingxi[position][i]);
+        //     }
+        // }
 
 
         // console.log(modifiedPlayingXI);
 
         if(checkSquadWithPlayingXI(squad, modifiedPlayingXI) == false){
-            response.status(400);
+            // console.log('HERE');
+            response.sendStatus(400);
             return;
         }
         // console.log(modifiedPlayingXI);

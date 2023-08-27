@@ -35,6 +35,8 @@ const getUsersByMatchAndPlayerCommand = 'SELECT user_id FROM epl_playing_xi WHER
             player_10 = $2::integer OR \
             player_11 = $2::integer)';
 
+const getBestXICommand = 'SELECT * FROM epl_playing_xi WHERE user_id = \'EPL\' AND match_id = 0';
+
 async function addPlayingXI(user_id, match_id, players){
     var params = [user_id, match_id, players.formation, players.captain];
     for(var i = 0; i < 11; i++){
@@ -83,4 +85,13 @@ module.exports.getUsersByMatchAndPlayer = async (match_id, player_id) => {
     return res;
 }
 
+
+module.exports.getBestXI = async () => {
+    const pool = await getConnection();
+    const res = (await pool.query(getBestXICommand)).rows;
+    // console.log(res);
+    release(pool);
+    if(res.length != 1)return null;
+    return res[0];
+}
 
