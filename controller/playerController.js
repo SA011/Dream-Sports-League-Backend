@@ -18,6 +18,7 @@ const invertPositionNameConverter = {
     "MID": "midfielders",
     "FWD": "forwards"
 };
+
 module.exports.allPlayerWithPosition = async (request, response) => {
     try{
         const userLevel = await levelDatabase.getLevel(request.user.points);

@@ -5,6 +5,15 @@ const passport = require('passport');
 
 router.post('/login', passport.authenticate('local'), adminController.login);
 
+router.use((req, res, next) => {
+    if(req.user == null || req.user.role != 'admin'){
+        res.status(401).send('Unauthorized');
+    }else{
+        next();
+    }
+});
+
+
 router.post('/logout', adminController.logout);
 
 router.get('/matchweek/:week', adminController.getMatchWeek);
