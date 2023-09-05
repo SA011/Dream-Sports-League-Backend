@@ -17,3 +17,12 @@ module.exports.getAllPlayers = async (request, response) => {
         response.status(400);
     }
 }
+
+module.exports.getFantasyStandings = async (request, response) => {
+    try{
+        const ret = await statsDatabase.getFantasyStandings();
+        response.send(ret);
+    }catch(error){
+        response.status(400);
+    }
+}

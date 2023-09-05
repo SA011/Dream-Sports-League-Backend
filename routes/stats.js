@@ -7,4 +7,6 @@ router.get('/teams', statsController.getAllTeams);
 
 router.get('/players', statsController.getAllPlayers);
 
+router.get('/standings', statsController.getFantasyStandings);
+
 module.exports = router;
