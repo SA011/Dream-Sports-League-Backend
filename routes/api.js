@@ -17,4 +17,6 @@ router.use('/fixtures', require('./fixtures.js'));
 
 router.use('/transferwindow', require('./transferWindow.js'));
 
+router.use('/stats', require('./stats.js'));
+
 module.exports = router;
