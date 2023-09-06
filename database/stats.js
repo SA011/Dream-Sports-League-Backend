@@ -2,7 +2,7 @@ const {getConnection, release} = require('./connect.js');
 
 const findAllTeamsInfo = 'SELECT *, (win*3+draw) as points FROM epl_teams ORDER BY points';
 
-const findAllPlayersInfo = 'SELECT * FROM players order by points desc';
+const findAllPlayersInfo = 'SELECT p.*, t.name as team FROM players p join epl_teams t on p.team=t.id order by points desc';
 
 const findFantasyStandings = 'SELECT u.name, u.team_name, u.point FROM users u JOIN roles r ON r.user_id = u.user_id WHERE r.role = \'user\'';
 
