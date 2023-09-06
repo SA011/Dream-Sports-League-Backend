@@ -82,6 +82,13 @@ module.exports.joinFriendsLeague = async (user_id, id) => {
     return res;
 }
 
+module.exports.requestFriendsLeague = async (user_id, id) => {
+    const pool = await getConnection();
+    const res = (await pool.query(addMemberCommand, [id, user_id, 'request'])).rows;
+    release(pool);
+    return res;
+}
+
 module.exports.leaveFriendsLeague = async (user_id, id) => {
     const pool = await getConnection();
     const res = (await pool.query(removeMemberCommand, [id, user_id])).rows;
