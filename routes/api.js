@@ -19,4 +19,8 @@ router.use('/transferwindow', require('./transferWindow.js'));
 
 router.use('/stats', require('./stats.js'));
 
+router.use('/epl', require('./epl.js'));
+
+
+
 module.exports = router;
