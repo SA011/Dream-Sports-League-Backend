@@ -178,7 +178,8 @@ module.exports.getPlayingXI = async (request, response) => {
                 defenders: [],
                 midfielders: [],
                 forwards: []
-            }
+            },
+            matches: await matchDatabase.getAllMatchesWhichAreNotFinished()
         };
 
         var all = [];
