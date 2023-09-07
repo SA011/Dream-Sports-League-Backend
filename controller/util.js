@@ -22,3 +22,4 @@ module.exports.getDate = (date) => {
     return new Date(date);
 }
 
+module.exports.weekDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];

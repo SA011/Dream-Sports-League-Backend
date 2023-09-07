@@ -33,11 +33,17 @@ const updateLeagueCommand = 'UPDATE friends_league SET \
 
 const getLeagueMembersCommand = 'SELECT * FROM friends_league_members WHERE fl_id = $1::integer';
 
-const getLeagueMembersWithUserCommand = 'SELECT * FROM friends_league_members m JOIN users u ON m.user_id = u.user_id WHERE fl_id = $1::integer';
+const getLeagueMembersWithUserCommand = 'SELECT * FROM friends_league_members m JOIN users u ON m.user_id = u.user_id WHERE fl_id = $1::integer AND (role = \'member\' OR role = \'admin\')';
 
 const getLeagueRequestsCommand = 'SELECT * FROM friends_league_members WHERE fl_id = $1::integer AND role = \'request\'';
 
 const updateRoleCommand = 'UPDATE friends_league_members SET role = $3::text WHERE fl_id = $1::integer AND user_id = $2::text';
+
+const deleteAllMatchesCommand = 'DELETE FROM fl_matches WHERE friends_league = $1::integer';
+
+const addMatchesCommand = 'INSERT INTO fl_matches \
+        (friends_league, home, away, time, scoreline) \
+        VALUES ($1::integer, $2::text, $3::text, $4::timestamp, $5::text) RETURNING *';
 
 module.exports.getFriendsLeaguesOfUser = async (user_id) => {
     const pool = await getConnection();
@@ -103,11 +109,13 @@ module.exports.deleteFriendsLeague = async (id) => {
     const pool = await getConnection();
     const res = (await pool.query(removeAllMembersCommand, [id])).rows;
     const res2 = (await pool.query(deleteLeagueCommand, [id])).rows;
+    const res3 = (await pool.query(deleteAllMatchesCommand, [id])).rows;
     release(pool);
     return res2;
 }
 
 module.exports.updateFriendsLeague = async (id, params) => {
+    // console.log(params);
     const pool = await getConnection();
     const res = (await pool.query(updateLeagueCommand, [id].concat(params))).rows;
     release(pool);
@@ -142,3 +150,19 @@ module.exports.handleFriendsLeagueRequest = async (id, user_id, status) => {
     return res;
 } 
 
+module.exports.deleteAllMatches = async (id) => {
+    const pool = await getConnection();
+    const res = (await pool.query(deleteAllMatchesCommand, [id])).rows;
+    release(pool);
+    return res;
+}
+
+module.exports.addMatches = async (id, matches) => {
+    const pool = await getConnection();
+    var res = [];
+    for(var i = 0; i < matches.length; i++){
+        res.push((await pool.query(addMatchesCommand, [id, matches[i].home, matches[i].away, matches[i].time, matches[i].scoreline])).rows);
+    }
+    release(pool);
+    return res;
+}
