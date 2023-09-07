@@ -213,6 +213,11 @@ module.exports.handleFriendsLeagueRequest = async (request, response) => {
             response.send('Not Admin');
             return;
         }
+        if(!(await checkJoinInTime(request.params.id)) && request.body.status.toLowerCase() == 'accept'){
+            response.send('Not Accepted');
+            return;
+        }
+
         const ret = await friendsLeagueDatabase.handleFriendsLeagueRequest(request.params.id, request.body.user_id, request.body.status);
         response.send('Handled');
     }catch(error){
