@@ -27,6 +27,8 @@ router.get('/:id', friendsLeagueController.getFriendsLeagueById);
 
 router.get('/:id/teams', friendsLeagueController.getFriendsLeagueTeams);
 
+router.get('/:id/requests', friendsLeagueController.getFriendsLeagueRequests);
 
+router.post('/:id/requests', friendsLeagueController.handleFriendsLeagueRequest);
 
 module.exports = router;

@@ -35,6 +35,9 @@ const getLeagueMembersCommand = 'SELECT * FROM friends_league_members WHERE fl_i
 
 const getLeagueMembersWithUserCommand = 'SELECT * FROM friends_league_members m JOIN users u ON m.user_id = u.user_id WHERE fl_id = $1::integer';
 
+const getLeagueRequestsCommand = 'SELECT * FROM friends_league_members WHERE fl_id = $1::integer AND role = \'request\'';
+
+const updateRoleCommand = 'UPDATE friends_league_members SET role = $3::text WHERE fl_id = $1::integer AND user_id = $2::text';
 
 module.exports.getFriendsLeaguesOfUser = async (user_id) => {
     const pool = await getConnection();
@@ -117,4 +120,25 @@ module.exports.getFriendsLeagueTeams = async (id) => {
     release(pool);
     return res;
 }
+
+module.exports.getFriendsLeagueRequests = async (id) => {
+    const pool = await getConnection();
+    const res = (await pool.query(getLeagueRequestsCommand, [id])).rows;
+    release(pool);
+    return res;
+}
+
+module.exports.handleFriendsLeagueRequest = async (id, user_id, status) => {
+    // console.log(id, user_id, status);
+    var res = null;
+    const pool = await getConnection();
+    if(status.toLowerCase() == 'accept'){
+        res = (await pool.query(updateRoleCommand, [id, user_id, 'member'])).rows;
+    }
+    if(status.toLowerCase() == 'reject'){
+        res = (await pool.query(removeMemberCommand, [id, user_id])).rows;
+    }
+    release(pool);
+    return res;
+} 
 
