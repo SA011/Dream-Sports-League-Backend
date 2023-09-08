@@ -31,4 +31,6 @@ router.get('/:id/requests', friendsLeagueController.getFriendsLeagueRequests);
 
 router.post('/:id/requests', friendsLeagueController.handleFriendsLeagueRequest);
 
+router.get('/:id/fixture', friendsLeagueController.getFixture);
+
 module.exports = router;

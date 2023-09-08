@@ -45,6 +45,20 @@ const addMatchesCommand = 'INSERT INTO fl_matches \
         (friends_league, home, away, time, scoreline) \
         VALUES ($1::integer, $2::text, $3::text, $4::timestamp, $5::text) RETURNING *';
 
+const getMatchByIdCommand = 'SELECT * FROM fl_matches WHERE id = $1::integer';
+
+const updateScoreCommand = 'UPDATE fl_matches SET scoreline = $2::text WHERE id = $1::integer RETURNING *';
+
+const getPlayingXICommand = 'SELECT * FROM fl_playing_xi WHERE match_id = $1::integer AND user_id = $2::text';
+
+const addPlayingXICommand = 'INSERT INTO fl_playing_xi \
+        (match_id, user_id, formation, captain, player_1, player_2, player_3, player_4, player_5, player_6, player_7, player_8, player_9, player_10, player_11, player_12, player_13, player_14, player_15, player_16) \
+        VALUES ($1::integer, $2::text, $3::text, $4::integer, $5::integer, $6::integer, $7::integer, $8::integer, $9::integer, $10::integer, $11::integer, $12::integer, $13::integer, $14::integer, $15::integer, $16::integer, $17::integer, $18::integer, $19::integer, $20::integer) RETURNING *';
+
+const deletePlayingXICommand = 'DELETE FROM fl_playing_xi WHERE match_id = $1::integer AND user_id = $2::text';
+
+const getMatchesCommand = 'SELECT * FROM fl_matches WHERE friends_league = $1::integer';
+
 module.exports.getFriendsLeaguesOfUser = async (user_id) => {
     const pool = await getConnection();
     const res = (await pool.query(findLeaguesOfUser, [user_id])).rows;
@@ -163,6 +177,61 @@ module.exports.addMatches = async (id, matches) => {
     for(var i = 0; i < matches.length; i++){
         res.push((await pool.query(addMatchesCommand, [id, matches[i].home, matches[i].away, matches[i].time, matches[i].scoreline])).rows);
     }
+    release(pool);
+    return res;
+}
+
+module.exports.getMatchById = async (id) => {
+    const pool = await getConnection();
+    const res = (await pool.query(getMatchByIdCommand, [id])).rows;
+    release(pool);
+    if(res == null || res.length != 1)return null;
+    return res[0];
+}
+
+module.exports.updateScore = async (id, score) => {
+    const pool = await getConnection();
+    const res = (await pool.query(updateScoreCommand, [id, score])).rows;
+    release(pool);
+    return res;
+}
+
+module.exports.getPlayingXI = async (match_id, user_id) => {
+    const pool = await getConnection();
+    const res = (await pool.query(getPlayingXICommand, [match_id, user_id])).rows;
+    release(pool);
+    if(res == null || res.length != 1)return null;
+    return res[0];
+}
+module.exports.deletePlayingXI = async (match_id, user_id) => {
+    const pool = await getConnection();
+    const res = (await pool.query(deletePlayingXICommand, [match_id, user_id])).rows;
+    release(pool);
+    return res;
+}
+
+module.exports.addPlayingXI = async (user_id, match_id, formation, captain, players) => {
+    var params = [match_id, user_id, formation, captain];
+    for(var i = 0; i < players.length; i++){
+        params.push(players[i]);
+    }
+    while(params.length < 20){
+        params.push(null);
+    }
+    const current = await this.getPlayingXI(match_id, user_id);
+    if(current != null){
+        const res = await this.deletePlayingXI(match_id, user_id);
+    }
+    
+    const pool = await getConnection();
+    const res = (await pool.query(addPlayingXICommand, params)).rows;
+    release(pool);
+    return res;
+}
+
+module.exports.getMatches = async (id) => {
+    const pool = await getConnection();
+    const res = (await pool.query(getMatchesCommand, [id])).rows;
     release(pool);
     return res;
 }
