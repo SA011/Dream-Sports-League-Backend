@@ -39,4 +39,6 @@ router.get('/:id/playingxi', friendsLeagueController.getPlayingXI);
 
 router.post('/:id/playingxi', friendsLeagueController.setPlayingXI);
 
+router.get('/:id/mymatches', friendsLeagueController.getMyMatches);
+
 module.exports = router;

@@ -1020,3 +1020,28 @@ module.exports.setPlayingXI = async (request, response) => {
         response.status(400);
     }
 }
+
+module.exports.getMyMatches = async (request, response) => {
+    try{
+        const role = await friendsLeagueDatabase.getRole(request.params.id, request.user.user_id);
+        if(role == null || role == 'request'){
+            response.send('Not a member');
+            return;
+        }
+        var matches = await friendsLeagueDatabase.getMatchesOfUser(request.params.id, request.user.user_id);
+        if(matches == null){
+            response.send('No Matches');
+            return;
+        }
+        for(var i = 0; i < matches.length; i++){
+            matches[i].scoreline = await getScoreLine(matches[i].id);
+        }
+        var ret = {
+            matches: matches,
+            role: role
+        }
+        response.send(ret);
+    }catch(error){
+        response.status(400);
+    }
+}
