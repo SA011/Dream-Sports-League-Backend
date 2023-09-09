@@ -5,6 +5,7 @@ const playerController = require('../controller/playerController');
 
 const router = Router();
 
+router.get('/all/selectplayer/:position', playerController.allPlayerWithPosition);
 
 router.use((req, res, next) => {
     if(req.user == null || req.user.role != 'user'){
@@ -14,7 +15,6 @@ router.use((req, res, next) => {
     }
 });
 
-router.get('/all/selectplayer/:position', playerController.allPlayerWithPosition);
 
 router.get('/mysquad/selectplayer/:position', playerController.squadPlayerWithPosition);
 

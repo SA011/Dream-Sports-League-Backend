@@ -5,6 +5,13 @@ const teamDatabase = require('../database/teamInfo');
 const playerDatabase = require('../database/players');
 const playingXIDatabase = require('../database/playingXI');
 
+
+const invertPositionNameConverter = {
+    "GK": "goalkeepers",
+    "DEF": "defenders",
+    "MID": "midfielders",
+    "FWD": "forwards"
+};
 module.exports.login = async (request, response) => {
     if(request.user.role != 'admin'){
         request.logout((err) => {
@@ -186,7 +193,23 @@ module.exports.getBestXI = async (request, response) => {
         });
     }
 
-    response.send(bestXI);
+    var ret = {
+        formation: bestXI.formation,
+        captain: bestXI.captain,
+        players: {
+            goalkeepers: [],
+            defenders: [],
+            midfielders: [],
+            forwards: []
+        }
+    }
+
+    for(var i = 0; i < 11; i++){
+        const player = await playerDatabase.getPlayerByIdWithTeam(bestXI[`player_${i + 1}`]);
+        ret.players[invertPositionNameConverter[player.position]].push(player);
+    }
+
+    response.send(ret);
 }
 
 module.exports.setBestXI = async (request, response) => {
