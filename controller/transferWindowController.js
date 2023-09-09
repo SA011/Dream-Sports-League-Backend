@@ -3,9 +3,10 @@ const squadDatabase = require('../database/squad');
 const userDatabase = require('../database/users');
 module.exports.getTransferWindow = async (req, res) => {
     // console.log(req.user);
+    const curUser = await userDatabase.getUser(req.user.user_id);
     res.send({
-        balance: req.user.balance,
-        transfer_count: req.user.wildcard,
+        balance: curUser.balance,
+        transfer_count: curUser.wildcard,
         transfer_limit: 2
     });
 }
