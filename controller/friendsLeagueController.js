@@ -4,6 +4,15 @@ const squadDatabase = require('../database/squad.js');
 const { get } = require('../routes/friendsLeague.js');
 const { getCurrentTime, convertTime, getDate, weekDays } = require('./util.js');
 
+
+const invertPositionNameConverter = {
+    "GK": "goalkeepers",
+    "DEF": "defenders",
+    "MID": "midfielders",
+    "FWD": "forwards"
+};
+
+
 module.exports.getMyFriendsLeague = async (request, response) => {
     try{
         const ret = await friendsLeagueDatabase.getFriendsLeaguesOfUser(request.user.user_id);
@@ -425,6 +434,7 @@ async function getScoreLineUtil(match_id){
 }
 
 async function changeFormat(playingXI){
+    // console.log(playingXI);
     var ret = {
         user_id: playingXI.user_id,
         match_id: playingXI.match_id,
@@ -440,8 +450,9 @@ async function changeFormat(playingXI){
     for(var i = 1; i <= 16; i++){
         if(playingXI[`player_${i}`] != null){
             const player = await playerDatabase.getPlayerByIdWithTeam(playingXI[`player_${i}`]);
+            // console.log(player);
             if(player != null){
-                ret.players[player.position].push(player);
+                ret.players[invertPositionNameConverter[player.position]].push(player);
             }
         }
     }
@@ -456,6 +467,42 @@ function checkSquadWithPlayingXI(squad, playingXI, team_player_count){
         if(playingXI[`player_${i}`] != null)
             playerSet.add(playingXI[`player_${i}`]);
     }
+    // console.log(playerSet);
+    var count = 0;
+    for(var i = 1; i <= 2; i++){
+        if(squad[`goalkeeper_${i}`] != null && playerSet.has(squad[`goalkeeper_${i}`])){
+            count++;
+        }
+    }
+
+    for(var i = 1; i <= 5; i++){
+        if(squad[`defender_${i}`] != null && playerSet.has(squad[`defender_${i}`])){
+            count++;
+        }
+    }  
+
+    for(var i = 1; i <= 5; i++){
+        if(squad[`midfielder_${i}`] != null && playerSet.has(squad[`midfielder_${i}`])){
+            count++;
+        }
+    }
+    
+    for(var i = 1; i <= 4; i++){
+        if(squad[`forward_${i}`] != null && playerSet.has(squad[`forward_${i}`])){
+            count++;
+        }
+    }
+    // console.log(count);
+    return count == team_player_count && playerSet.size == team_player_count && playerSet.has(playingXI.captain);
+}
+
+function checkSquadWithPlayingXI2(squad, playingXI, team_player_count){
+    var playerSet = new Set();
+    for(var i = 0; i < playingXI.players.length; i++){
+        if(playingXI.players[i] != null)
+            playerSet.add(playingXI.players[i]);
+    }
+    // console.log(playerSet);
     var count = 0;
     for(var i = 1; i <= 2; i++){
         if(squad[`goalkeeper_${i}`] != null && playerSet.has(squad[`goalkeeper_${i}`])){
@@ -557,9 +604,14 @@ async function getPlayingXI(team_id, fl_id, match_id){
     if(fl_info == null){
         return null;
     }
+    const matchInfo = await friendsLeagueDatabase.getMatchById(match_id);
+    if(matchInfo == null || matchInfo.home != team_id && matchInfo.away != team_id){
+        return null;
+    }
     const playingXI = await friendsLeagueDatabase.getPlayingXI(match_id, team_id);
     const squad = await squadDatabase.getSquad(team_id);
     if(playingXI != null && checkSquadWithPlayingXI(squad, playingXI, fl_info.team_player_count)){
+        // console.log(await changeFormat(playingXI));
         return await changeFormat(playingXI);
     }
     return await generatePlayingXI(team_id, fl_info.team_player_count, match_id, squad);
@@ -716,15 +768,31 @@ module.exports.getFixture = async (request, response) => {
             return;
         }
         // console.log('here');
-        const ret = await getFixtureUtil(request.params.id);
+        var ret = await getFixtureUtil(request.params.id);
         if(ret == null){
             response.send('Do not have enough members');
             return;
         }
-        const fixture = {
-            matches: ret,
+        ret.sort((a, b) => {
+            if(a.time == b.time){
+                return a.home.localeCompare(b.home);
+            }
+            return a.time - b.time;
+        });
+
+        var fixture = {
+            matches: [],
             role: role
         };
+        for(var i = 0; i < ret.length; i++){
+            if(i == 0 || ret[i].time.valueOf() != ret[i - 1].time.valueOf()){
+                fixture.matches.push({
+                    time: ret[i].time,
+                    matches: []
+                });
+            }
+            fixture.matches[fixture.matches.length - 1].matches.push(ret[i]);
+        }
         response.send(fixture);
     }catch(error){
         response.status(400);
@@ -813,6 +881,80 @@ module.exports.getStandings = async (request, response) => {
         }
         standings.role = role;
         response.send(standings);
+    }catch(error){
+        response.status(400);
+    }
+}
+
+module.exports.getPlayingXI = async (request, response) => {
+    try{
+        const role = await friendsLeagueDatabase.getRole(request.params.id, request.user.user_id);
+        if(role == null || role == 'request'){
+            response.send('Not a member');
+            return;
+        }
+        var playingXI = await getPlayingXI(request.user.user_id, request.params.id, request.body.match_id);
+        if(playingXI == null){
+            response.send('Not Your match');
+            return;
+        }
+        playingXI.role = role;
+        response.send(playingXI);
+    }catch(error){
+        response.status(400);
+    }
+}
+
+module.exports.setPlayingXI = async (request, response) => {
+    try{
+        const role = await friendsLeagueDatabase.getRole(request.params.id, request.user.user_id);
+        if(role == null || role == 'request'){
+            response.send('Not a member');
+            return;
+        }
+        const match = await friendsLeagueDatabase.getMatchById(request.body.match_id);
+        if(match == null || match.home != request.user.user_id && match.away != request.user.user_id){
+            response.send('Not Your match');
+            return;
+        }
+        const fl_info = await friendsLeagueDatabase.getFriendsLeagueByID(request.params.id);
+        if(fl_info == null){
+            response.send('Not Your match');
+            return;
+        }
+        if(getCurrentTime(fl_info.timezone) > match.time){
+            response.send('Cannot change playing XI');
+            return;
+        }
+        var cnt = 0;
+        var form = request.body.formation.split('-');
+        for(var i = 0; i < form.length; i++){
+            cnt += parseInt(form[i]);
+        }
+        cnt++;
+        if(cnt != fl_info.team_player_count){
+            response.send('Invalid Formation');
+            return;
+        }
+        if(request.body.captain == null || request.body.captain == undefined){
+            response.send('Invalid Captain');
+            return;
+        }
+        const squad = await squadDatabase.getSquad(request.user.user_id);
+        if(squad == null){
+            response.send('Invalid Squad');
+            return;
+        }
+        if(!checkSquadWithPlayingXI2(squad, request.body, fl_info.team_player_count)){
+            response.send('Invalid Playing XI');
+            return;
+        }
+        const ret = await friendsLeagueDatabase.addPlayingXI(request.user.user_id, request.body.match_id, request.body.formation, request.body.captain, request.body.players);
+        if(ret){
+            response.send('Playing XI Added');
+        }else{
+            response.send('Playing XI Not Added');
+        }
     }catch(error){
         response.status(400);
     }
