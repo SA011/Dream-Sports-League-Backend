@@ -19,4 +19,10 @@ router.use('/transferwindow', require('./transferWindow.js'));
 
 router.use('/stats', require('./stats.js'));
 
+router.use('/epl', require('./epl.js'));
+
+router.use('/friendsleague', require('./friendsLeague.js'));
+
+
+
 module.exports = router;

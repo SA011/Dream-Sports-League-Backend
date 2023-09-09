@@ -15,6 +15,8 @@ const addUserQuery = 'INSERT INTO \
 
 const addEmptySquad = 'INSERT INTO squad (user_id) VALUES ($1::text)';
 
+const addLowestSquad = 'INSERT INTO squad (user_id, goalkeeper_1, goalkeeper_2, defender_1, defender_2, defender_3, defender_4, defender_5, midfielder_1, midfielder_2, midfielder_3, midfielder_4, midfielder_5 ,forward_1, forward_2, forward_3, forward_4) \
+                        VALUES ($1::text, 760, 707, 605, 598, 664, 737, 744, 678, 466, 553 ,647, 349, 663, 596, 591, 597)';
 const addRoleQuery = 'INSERT INTO roles (user_id, role) VALUES ($1::text, $2::text)';
 
 const addEmptyPlayingXI = 'INSERT INTO epl_playing_xi (user_id, match_id, formation) VALUES ($1::text, $2::integer, $3::text)';
@@ -68,7 +70,9 @@ module.exports.addUser = async (userid, name, email, team_name, favorite_team, p
     const pool = await getConnection();
     const res = await pool.query(addUserQuery, [userid, name, email, team_name, favorite_team, password, 100, 0, 2, 2]);
     if(res.rowCount == 1){
-        await pool.query(addEmptySquad, [userid]);
+        // await pool.query(addEmptySquad, [userid]);
+        await pool.query(addLowestSquad, [userid]);
+        await this.updateUserBalance(userid, 30.9);
         await pool.query(addRoleQuery, [userid, 'user']);
         await pool.query(addEmptyPlayingXI, [userid, 0, '4-3-3']);
     }

@@ -94,4 +94,3 @@ module.exports.getBestXI = async () => {
     if(res.length != 1)return null;
     return res[0];
 }
-

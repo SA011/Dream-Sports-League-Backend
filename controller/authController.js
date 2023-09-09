@@ -33,7 +33,7 @@ function comparePassword(password, hashedPassword) {
 // }
 
 module.exports.register = async (request, response) => {
-    response.status(200).send("User added");
+    response.status(200).send("User Added");
 }
 module.exports.login = async (request, response) => {
     try{

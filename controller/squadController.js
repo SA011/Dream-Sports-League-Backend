@@ -81,67 +81,81 @@ module.exports.autopick = async (request, response) => {
     }
 };
 
-module.exports.squad = async (request, response) => {
-    try{
-        // console.log(request.user);
-        // response.send(await squadDatabase.getSquad(request.user.user_id));
-        // response.send(emptyList);
-        const mysquad = await squadDatabase.getSquad(request.user.user_id);
-        const curBalance = request.user.balance;
-        // console.log(mysquad);
-        var ret = {
-            players: {
-                goalkeepers: [],
-                defenders: [],
-                midfielders: [],
-                forwards: []
-            },
-            budget: curBalance
-        };
-        // console.log(mysquad);
-        var temp = [];
-        for(var i = 1; i <= 2; i++){
+module.exports.getSquad = async (user_id, curBalance) => {
+
+    // console.log(request.user);
+    // response.send(await squadDatabase.getSquad(request.user.user_id));
+    // response.send(emptyList);
+    const mysquad = await squadDatabase.getSquad(user_id);
+    // console.log(mysquad);
+    var ret = {
+        players: {
+            goalkeepers: [],
+            defenders: [],
+            midfielders: [],
+            forwards: []
+        },
+        budget: curBalance
+    };
+    // console.log(mysquad);
+    var temp = [];
+    for(var i = 1; i <= 2; i++){
+        try{
             const id = mysquad[`goalkeeper_${i}`];
             // console.log(id);
-            if(id){
+            if(id != null){
                 temp.push(id);
             }
+        }catch(error){
         }
-        // console.log(temp);
-        ret.players.goalkeepers = await playerDatabase.getPlayersByIdWithTeam(temp);
-        temp = [];
-        
-        // console.log(ret);
-        for(var i = 1; i <= 5; i++){
+    }
+    // console.log(temp);
+    ret.players.goalkeepers = await playerDatabase.getPlayersByIdWithTeam(temp);
+    temp = [];
+    
+    // console.log(ret);
+    for(var i = 1; i <= 5; i++){
+        try{
             const id = mysquad[`defender_${i}`];
             if(id){
                 temp.push(id);
             }
+        }catch(error){
         }
-        ret.players.defenders = await playerDatabase.getPlayersByIdWithTeam(temp);
-        temp = [];
-        
-        
-        for(var i = 1; i <= 5; i++){
+    }
+    ret.players.defenders = await playerDatabase.getPlayersByIdWithTeam(temp);
+    temp = [];
+    
+    
+    for(var i = 1; i <= 5; i++){
+        try{
             const id = mysquad[`midfielder_${i}`];
             if(id){
                 temp.push(id);
             }
+        }catch(error){
         }
-        ret.players.midfielders = await playerDatabase.getPlayersByIdWithTeam(temp);
-        temp = [];
-        
-        
-        for(var i = 1; i <= 4; i++){
+    }
+    ret.players.midfielders = await playerDatabase.getPlayersByIdWithTeam(temp);
+    temp = [];
+    
+    
+    for(var i = 1; i <= 4; i++){
+        try{
             const id = mysquad[`forward_${i}`];
             if(id){
                 temp.push(id);
             }
+        }catch(error){
         }
-        ret.players.forwards = await playerDatabase.getPlayersByIdWithTeam(temp);
-        
-        response.send(ret);
-        
+    }
+    ret.players.forwards = await playerDatabase.getPlayersByIdWithTeam(temp);
+    return ret;
+}
+
+module.exports.squad = async (request, response) => {
+    try{
+        response.send(await this.getSquad(request.user.user_id, request.user.balance));
     }catch(error){
         response.sendStatus(400);
     }
