@@ -886,6 +886,58 @@ module.exports.getStandings = async (request, response) => {
     }
 }
 
+async function getBench(players, team_id){
+    const squad = await squadDatabase.getSquad(team_id);
+    if(squad == null){
+        return null;
+    }
+    var ret = {
+        goalkeepers: [],
+        defenders: [],
+        midfielders: [],
+        forwards: []
+    }
+    var playerSet = new Set();
+    for(var i = 0; i < players['goalkeepers'].length; i++){
+        playerSet.add(players['goalkeepers'][i].id);
+    }
+    for(var i = 0; i < players['defenders'].length; i++){
+        playerSet.add(players['defenders'][i].id);
+    }
+    for(var i = 0; i < players['midfielders'].length; i++){
+        playerSet.add(players['midfielders'][i].id);
+    }
+    for(var i = 0; i < players['forwards'].length; i++){
+        playerSet.add(players['forwards'][i].id);
+    }
+
+    for(var i = 1; i <= 2; i++){
+        if(squad[`goalkeeper_${i}`] != null && !playerSet.has(squad[`goalkeeper_${i}`])){
+            ret.goalkeepers.push(await playerDatabase.getPlayerByIdWithTeam(squad[`goalkeeper_${i}`]));
+        }
+    }
+
+    for(var i = 1; i <= 5; i++){
+        if(squad[`defender_${i}`] != null && !playerSet.has(squad[`defender_${i}`])){
+            ret.defenders.push(await playerDatabase.getPlayerByIdWithTeam(squad[`defender_${i}`]));
+        }
+    }
+
+    for(var i = 1; i <= 5; i++){
+        if(squad[`midfielder_${i}`] != null && !playerSet.has(squad[`midfielder_${i}`])){
+            ret.midfielders.push(await playerDatabase.getPlayerByIdWithTeam(squad[`midfielder_${i}`]));
+        }
+    }
+
+    for(var i = 1; i <= 4; i++){
+        if(squad[`forward_${i}`] != null && !playerSet.has(squad[`forward_${i}`])){
+            ret.forwards.push(await playerDatabase.getPlayerByIdWithTeam(squad[`forward_${i}`]));
+        }
+    }
+
+    return ret;
+}
+    
 module.exports.getPlayingXI = async (request, response) => {
     try{
         const role = await friendsLeagueDatabase.getRole(request.params.id, request.user.user_id);
@@ -898,8 +950,17 @@ module.exports.getPlayingXI = async (request, response) => {
             response.send('Not Your match');
             return;
         }
-        playingXI.role = role;
-        response.send(playingXI);
+        var ret = {
+            user_id: playingXI.user_id,
+            match_id: playingXI.match_id,
+            formation: playingXI.formation,
+            captain: playingXI.captain,
+            playingxi: playingXI.players,
+            bench: await getBench(playingXI.players, request.user.user_id),
+            role: role
+        }
+        
+        response.send(ret);
     }catch(error){
         response.status(400);
     }
