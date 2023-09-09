@@ -37,6 +37,7 @@ module.exports.getFriendsLeagueById = async (request, response) => {
 
 module.exports.createFriendsLeague = async (request, response) => {
     try{
+        // console.log(request.body);
         if(getCurrentTime(request.body.timezone) > convertTime(getDate(request.body.start_date), request.body.match_time)){
             response.send("Start Time is in the past");
             return;
@@ -126,15 +127,21 @@ module.exports.joinFriendsLeague = async (request, response) => {
 
 module.exports.leaveFriendsLeague = async (request, response) => {
     try{
+        const role = await friendsLeagueDatabase.getRole(request.body.id, request.user.user_id);
+        if(role == null || role == 'request'){
+            response.send('Not Member');
+            return;
+        }
+        if(role == 'admin'){
+            response.send('Not Left Friends League');
+            return;
+        }
+
         if(!(await checkJoinInTime(request.body.id))){
             response.send("Not Left Friends League");
             return;
         }
 
-        if((await checkIsAdmin(request.user.user_id, request.body.id))){
-            response.send("Not Left Friends League");
-            return;
-        }
 
         const ret = await friendsLeagueDatabase.leaveFriendsLeague(request.user.user_id, request.body.id);
         if(ret){
@@ -163,8 +170,9 @@ async function checkIsAdmin(user_id, fl_id){
 }
 module.exports.deleteFriendsLeague = async (request, response) => {
     try{
-        if(!(await checkIsAdmin(request.user.user_id, request.body.id))){
-            response.send("Not Deleted Friends League");
+        const role = await friendsLeagueDatabase.getRole(request.body.id, request.user.user_id);
+        if(role != 'admin'){
+            response.send('Not Admin');
             return;
         }
         const ret = await friendsLeagueDatabase.deleteFriendsLeague(request.body.id);
@@ -183,8 +191,9 @@ module.exports.updateFriendsLeague = async (request, response) => {
         // console.log(getCurrentTime(request.body.timezone));
         // console.log(getDate(request.body.start_date));
         // console.log(request.body);
-        if(!(await checkIsAdmin(request.user.user_id, request.body.id))){
-            response.send("Not Updated Friends League");
+        const role = await friendsLeagueDatabase.getRole(request.body.id, request.user.user_id);
+        if(role != 'admin'){
+            response.send('Not Admin');
             return;
         }
         // console.log(request.body);
@@ -227,8 +236,18 @@ module.exports.updateFriendsLeague = async (request, response) => {
 
 module.exports.getFriendsLeagueTeams = async (request, response) => {
     try{
+        
+        const role = await friendsLeagueDatabase.getRole(request.params.id, request.user.user_id);
+        if(role == null || role == 'request'){
+            response.send('Not Member');
+            return;
+        }
         const ret = await friendsLeagueDatabase.getFriendsLeagueTeams(request.params.id);
-        response.send(ret);
+        const teams = {
+            teams: ret,
+            role: role
+        }
+        response.send(teams);
     }catch(error){
         response.status(400);
     }
@@ -236,12 +255,17 @@ module.exports.getFriendsLeagueTeams = async (request, response) => {
 
 module.exports.getFriendsLeagueRequests = async (request, response) => {
     try{
-        if(!(await checkIsAdmin(request.user.user_id, request.params.id))){
+        const role = await friendsLeagueDatabase.getRole(request.params.id, request.user.user_id);
+        if(role != 'admin'){
             response.send('Not Admin');
             return;
         }
         const ret = await friendsLeagueDatabase.getFriendsLeagueRequests(request.params.id);
-        response.send(ret);
+        const requests = {
+            requests: ret,
+            role: role
+        }
+        response.send(requests);
     }catch(error){
         response.status(400);
     }
@@ -249,7 +273,8 @@ module.exports.getFriendsLeagueRequests = async (request, response) => {
 
 module.exports.handleFriendsLeagueRequest = async (request, response) => {
     try{
-        if(!(await checkIsAdmin(request.user.user_id, request.params.id))){
+        const role = await friendsLeagueDatabase.getRole(request.params.id, request.user.user_id);
+        if(role != 'admin'){
             response.send('Not Admin');
             return;
         }
@@ -269,7 +294,6 @@ module.exports.handleFriendsLeagueRequest = async (request, response) => {
                 await memberAddedInLeague(request.params.id);
             }
         }
-
         response.send('Handled');
     }catch(error){
         response.status(400);
@@ -491,8 +515,8 @@ async function generatePlayingXI(team_id, team_player_count, match_id, squad){
     for(var i = 1; i <= 5; i++){
         if(team_player_count == 0)
             break;
-        players.push(squad.defender_1);
-        ret.players.defenders.push(await playerDatabase.getPlayerByIdWithTeam(squad.defender_1));
+        players.push(squad[`defender_${i}`]);
+        ret.players.defenders.push(await playerDatabase.getPlayerByIdWithTeam(squad[`defender_${i}`]));
         team_player_count--;
         formation[0]++;
     }
@@ -500,8 +524,8 @@ async function generatePlayingXI(team_id, team_player_count, match_id, squad){
     for(var i = 1; i <= 5; i++){
         if(team_player_count == 0)
             break;
-        players.push(squad.midfielder_1);
-        ret.players.midfielders.push(await playerDatabase.getPlayerByIdWithTeam(squad.midfielder_1));
+        players.push(squad[`midfielder_${i}`]);
+        ret.players.midfielders.push(await playerDatabase.getPlayerByIdWithTeam(squad[`midfielder_${i}`]));
         team_player_count--;
         formation[1]++;
     }
@@ -509,8 +533,8 @@ async function generatePlayingXI(team_id, team_player_count, match_id, squad){
     for(var i = 1; i <= 4; i++){
         if(team_player_count == 0)
             break;
-        players.push(squad.forward_1);
-        ret.players.forwards.push(await playerDatabase.getPlayerByIdWithTeam(squad.forward_1));
+        players.push(squad[`forward_${i}`]);
+        ret.players.forwards.push(await playerDatabase.getPlayerByIdWithTeam(squad[`forward_${i}`]));
         team_player_count--;
         formation[2]++;
     }
@@ -686,13 +710,109 @@ async function getFixtureUtil(id){
 
 module.exports.getFixture = async (request, response) => {
     try{
+        const role = await friendsLeagueDatabase.getRole(request.params.id, request.user.user_id);
+        if(role == null || role == 'request'){
+            response.send('Not a member');
+            return;
+        }
         // console.log('here');
         const ret = await getFixtureUtil(request.params.id);
         if(ret == null){
             response.send('Do not have enough members');
             return;
         }
-        response.send(ret);
+        const fixture = {
+            matches: ret,
+            role: role
+        };
+        response.send(fixture);
+    }catch(error){
+        response.status(400);
+    }
+}
+
+module.exports.getStandingsUtil = async (id) => {
+    var members = await friendsLeagueDatabase.getFriendsLeagueTeams(id);
+    if(members == null){
+        return null;
+    }
+    var standings = [];
+    for(var i = 0; i < members.length; i++){
+        const matches = await friendsLeagueDatabase.getMatchesOfUser(id, members[i].user_id);
+        var goal_diff = 0;
+        var points = 0;
+        var wins = 0;
+        var losses = 0;
+        var draws = 0;
+        var played = 0;
+        for(var j = 0; j < matches.length; j++){
+            const scoreline = await getScoreLine(matches[j].id);
+            if(scoreline == null){
+                continue;
+            }
+            played++;
+            const score = scoreline.split('-');
+            if(matches[j].home == members[i].user_id){
+                goal_diff += parseInt(score[0]) - parseInt(score[1]);
+                if(parseInt(score[0]) > parseInt(score[1])){
+                    points += 3;
+                    wins++;
+                }else if(parseInt(score[0]) < parseInt(score[1])){
+                    losses++;
+                }else{
+                    points++;
+                    draws++;
+                }
+            }else{
+                goal_diff += parseInt(score[1]) - parseInt(score[0]);
+                if(parseInt(score[1]) > parseInt(score[0])){
+                    points += 3;
+                    wins++;
+                }else if(parseInt(score[1]) < parseInt(score[0])){
+                    losses++;
+                }else{
+                    points++;
+                    draws++;
+                }
+            }
+        }
+        standings.push({
+            user_id: members[i].user_id,
+            points: points,
+            wins: wins,
+            losses: losses,
+            draws: draws,
+            goal_difference: goal_diff,
+            played: played
+        });
+    }
+    standings.sort((a, b) => {
+        if(a.points == b.points){
+            if(a.goal_difference == b.goal_difference){
+                return b.wins - a.wins;
+            }
+            return b.goal_difference - a.goal_difference;
+        }
+        return b.points - a.points;
+    });
+
+    return {standings: standings};
+}
+
+module.exports.getStandings = async (request, response) => {
+    try{
+        const role = await friendsLeagueDatabase.getRole(request.params.id, request.user.user_id);
+        if(role == null || role == 'request'){
+            response.send('Not a member');
+            return;
+        }
+        var standings = await this.getStandingsUtil(request.params.id);
+        if(standings == null){
+            response.send('Do not have enough members');
+            return;
+        }
+        standings.role = role;
+        response.send(standings);
     }catch(error){
         response.status(400);
     }

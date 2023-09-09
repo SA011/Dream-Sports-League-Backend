@@ -59,6 +59,10 @@ const deletePlayingXICommand = 'DELETE FROM fl_playing_xi WHERE match_id = $1::i
 
 const getMatchesCommand = 'SELECT * FROM fl_matches WHERE friends_league = $1::integer';
 
+const getMatchesOfUserCommand = 'SELECT * FROM fl_matches WHERE friends_league = $1::integer AND (home = $2::text OR away = $2::text)';
+
+const getUserRoleCommand = 'SELECT role FROM friends_league_members WHERE fl_id = $1::integer AND user_id = $2::text';
+
 module.exports.getFriendsLeaguesOfUser = async (user_id) => {
     const pool = await getConnection();
     const res = (await pool.query(findLeaguesOfUser, [user_id])).rows;
@@ -234,4 +238,19 @@ module.exports.getMatches = async (id) => {
     const res = (await pool.query(getMatchesCommand, [id])).rows;
     release(pool);
     return res;
+}
+
+module.exports.getMatchesOfUser = async (id, user_id) => {
+    const pool = await getConnection();
+    const res = (await pool.query(getMatchesOfUserCommand, [id, user_id])).rows;
+    release(pool);
+    return res;
+}
+
+module.exports.getRole = async (id, user_id) => {
+    const pool = await getConnection();
+    const res = (await pool.query(getUserRoleCommand, [id, user_id])).rows;
+    release(pool);
+    if(res == null || res.length != 1)return null;
+    return res[0].role;
 }
