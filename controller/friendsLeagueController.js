@@ -15,7 +15,20 @@ const invertPositionNameConverter = {
 
 module.exports.getMyFriendsLeague = async (request, response) => {
     try{
-        const ret = await friendsLeagueDatabase.getFriendsLeaguesOfUser(request.user.user_id);
+        var ret = await friendsLeagueDatabase.getFriendsLeaguesOfUser(request.user.user_id);
+        
+        for(var i = 0; i < ret.length; i++){
+            const {standings} = await this.getStandingsUtil(ret[i].fl_id);
+            ret[i].rank = 1;
+            for(var j = 0; j < standings.length; j++){
+                if(standings[j].user_id == request.user.user_id){
+                    ret[i].rank = j + 1;
+                    break;
+                }
+            }
+        }
+
+
         response.send({
             friendsLeagues: ret
         });
@@ -26,9 +39,27 @@ module.exports.getMyFriendsLeague = async (request, response) => {
 
 module.exports.getAllFriendsLeagues = async (request, response) => {
     try{
-        const ret = await friendsLeagueDatabase.getAllFriendsLeagues();
+        var ret = await friendsLeagueDatabase.getAllFriendsLeagues();
+        var myfl = new Set();
+        if(request.user){
+            const myFriendsLeague = await friendsLeagueDatabase.getFriendsLeaguesOfUser(request.user.user_id);
+            for(var i = 0; i < myFriendsLeague.length; i++){
+                myfl.add(myFriendsLeague[i].id);
+            }
+        }
+        var res = [];
+        for(var i = 0; i < ret.length; i++){
+            if(myfl.has(ret[i].id)){
+                continue;
+            }
+            const members = await friendsLeagueDatabase.getFriendsLeagueTeams(ret[i].id);
+            // console.log(members);
+            ret[i].member_count = members.length;
+            res.push(ret[i]);
+        }
+
         response.send({
-            friendsLeagues: ret
+            friendsLeagues: res
         });
     }catch(error){
         response.status(400);
