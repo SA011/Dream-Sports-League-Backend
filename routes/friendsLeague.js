@@ -35,9 +35,9 @@ router.get('/:id/fixture', friendsLeagueController.getFixture);
 
 router.get('/:id/standings', friendsLeagueController.getStandings);
 
-router.get('/:id/playingxi', friendsLeagueController.getPlayingXI);
+router.post('/:id/playingxi', friendsLeagueController.getPlayingXI);
 
-router.post('/:id/playingxi', friendsLeagueController.setPlayingXI);
+router.post('/:id/playingxi/edit', friendsLeagueController.setPlayingXI);
 
 router.get('/:id/mymatches', friendsLeagueController.getMyMatches);
 
