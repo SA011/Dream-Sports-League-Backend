@@ -3,7 +3,7 @@ const playerDatabase = require('../database/players.js');
 const squadDatabase = require('../database/squad.js');
 const { get } = require('../routes/friendsLeague.js');
 const { getCurrentTime, convertTime, getDate, weekDays } = require('./util.js');
-
+const userDatabase = require('../database/users.js');
 
 const invertPositionNameConverter = {
     "GK": "goalkeepers",
@@ -300,9 +300,17 @@ module.exports.getFriendsLeagueRequests = async (request, response) => {
             response.send('Not Admin');
             return;
         }
-        const ret = await friendsLeagueDatabase.getFriendsLeagueRequests(request.params.id);
+        var ret = await friendsLeagueDatabase.getFriendsLeagueRequests(request.params.id);
+        
+        var res = [];
+        for(var i = 0; i < ret.length; i++){
+            console.log(ret[i].user_id);
+            res.push(await userDatabase.getUserToShow(ret[i].user_id));
+            console.log(ret[ret.length - 1]);
+        }
+        
         const requests = {
-            requests: ret,
+            requests: res,
             role: role
         }
         response.send(requests);
