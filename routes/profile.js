@@ -3,7 +3,7 @@ const userController = require('../controller/userController');
 
 const router = Router();
 
-router.use('/islogin', (req, res) => res.send(req.user != null));
+router.use('/islogin', (req, res) => res.send(req.user != null && req.user != undefined));
 
 router.use((req, res, next) => {
     if(req.user == null || req.user.role != 'user'){
