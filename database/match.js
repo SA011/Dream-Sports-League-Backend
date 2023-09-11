@@ -6,7 +6,7 @@ const findMatchesByWeek = 'SELECT * FROM matches WHERE game_week = $1::integer';
 
 const updateSimulatedMatch = 'UPDATE matches SET finished = $2::boolean WHERE id = $1::integer';
 
-const getAllMatchesWhichAreNotFinished = 'SELECT * FROM matches WHERE finished = false';
+const getAllMatchesWhichAreNotFinished = 'SELECT * FROM matches WHERE finished = false ORDER BY time';
 
 const getTeamName = 'SELECT name FROM epl_teams WHERE id = $1::integer';
 
