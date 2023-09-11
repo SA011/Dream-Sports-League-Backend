@@ -801,7 +801,10 @@ module.exports.getFixture = async (request, response) => {
         // console.log('here');
         var ret = await getFixtureUtil(request.params.id);
         if(ret == null){
-            response.send('Do not have enough members');
+            response.send({
+                status: 'Do not have enough members',
+                role: role
+            });
             return;
         }
         ret.sort((a, b) => {
