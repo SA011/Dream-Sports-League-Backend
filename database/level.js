@@ -1,5 +1,5 @@
 const userDatabase = require('./users');
-const level = [0, 50, 100, 200, 500, 1000000]
+const level = [0, 5, 10, 20, 50, 10000000,]
 const playerLevel = [0, 75, 80, 85, 90, 100]
 const levelName = ['Beginner', 'Amateur', 'Semi-Pro', 'Pro', 'World Class', 'Legend']
 
@@ -8,7 +8,7 @@ module.exports.getPlayerLevel = async(points) => {
         level: 0,
         levelName: 'Beginner',
         lowerBound: 0,
-        upperBound: 50
+        upperBound: 5
     };
     for(var i = 0; i < playerLevel.length; i++){
         if(points >= playerLevel[i]){
@@ -26,7 +26,7 @@ module.exports.getLevel = async(points) => {
         level: 0,
         levelName: 'Beginner',
         lowerBound: 0,
-        upperBound: 50
+        upperBound: 5
     };
     for(var i = 0; i < level.length; i++){
         if(points >= level[i]){

@@ -21,7 +21,8 @@ const invertPositionNameConverter = {
 
 module.exports.allPlayerWithPosition = async (request, response) => {
     try{
-        const userLevel = await levelDatabase.getLevel((request.user == null) ? 1000000 : request.user.points);
+        const userLevel = await levelDatabase.getLevel((request.user == null) ? 1000000 : request.user.point);
+        // console.log(userLevel, request.user.point);
         var { position } = request.params;
         position = positionNameConverter[position];
         var ret = await playerDatabase.getPlayerByPosition(position);
